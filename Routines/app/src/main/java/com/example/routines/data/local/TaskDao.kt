@@ -1,0 +1,27 @@
+package com.example.routines.data.local
+
+import androidx.room.Dao
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
+import androidx.room.Query
+import androidx.room.Delete
+import kotlinx.coroutines.flow.Flow
+
+@Dao
+interface TaskDao {
+
+    @Query("SELECT * FROM tasks WHERE routineId = :routineId ORDER BY orderPosition ASC")
+    fun getTasksForRoutine(routineId: Long): Flow<List<TaskEntity>>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertTask(task: TaskEntity): Long
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertTasks(tasks: List<TaskEntity>)
+
+    @Delete
+    suspend fun deleteTask(task: TaskEntity)
+
+    @Query("DELETE FROM tasks WHERE routineId = :routineId")
+    suspend fun deleteTasksForRoutine(routineId: Long)
+}
