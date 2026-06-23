@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,400;0,600;0,700;0,800;0,900;1,400&display=swap" rel="stylesheet">
+  <style>
+    body { margin: 0; background: #ECEAE5; }
+    * { box-sizing: border-box; }
+  </style>
+</helmet>
+
+<div style="background: #ECEAE5; min-height: 100vh; padding: 56px 48px; font-family: 'Nunito', sans-serif;">
+  <div style="max-width: 560px; margin: 0 auto;">
+
+    <!-- ─── Header ─────────────────────────────────────────────── -->
+    <div style="margin-bottom: 56px;">
+      <div style="font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: #9A9690; margin-bottom: 8px;">Design System</div>
+      <div style="font-size: 40px; font-weight: 900; color: #0F0F14; letter-spacing: -1.5px; line-height: 1;">Routines</div>
+      <div style="height: 3px; background: #D4773E; width: 48px; margin-top: 12px;"></div>
+      <div style="font-size: 13px; font-weight: 600; color: #ABABAB; margin-top: 12px;">v1.0 · Nunito · Burnt Orange · Warm White</div>
+    </div>
+
+    <!-- ─── Colors ──────────────────────────────────────────────── -->
+    <div style="margin-bottom: 48px;">
+      <div style="font-size: 10px; font-weight: 800; letter-spacing: 2.5px; text-transform: uppercase; color: #0F0F14; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid #0F0F14;">Colors</div>
+
+      <!-- Primary row -->
+      <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+        <div style="flex: 2;">
+          <div style="background: #D4773E; border-radius: 10px; height: 72px; margin-bottom: 8px;"></div>
+          <div style="font-size: 12px; font-weight: 800; color: #0F0F14;">BurntOrange</div>
+          <div style="font-size: 11px; font-weight: 600; color: #ABABAB;">#D4773E</div>
+          <div style="font-size: 10px; font-weight: 600; color: #ABABAB; margin-top: 2px;">Primary · FAB · Buttons · Badges · Ring</div>
+        </div>
+        <div style="flex: 1;">
+          <div style="background: #F7EDE5; border-radius: 10px; height: 72px; margin-bottom: 8px; border: 1px solid #EDE0D6;"></div>
+          <div style="font-size: 12px; font-weight: 800; color: #0F0F14;">BurntOrangeLight</div>
+          <div style="font-size: 11px; font-weight: 600; color: #ABABAB;">#F7EDE5</div>
+          <div style="font-size: 10px; font-weight: 600; color: #ABABAB; margin-top: 2px;">Tinted surfaces · Quote card · Icon circles</div>
+        </div>
+      </div>
+
+      <!-- Surface row -->
+      <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+        <div style="flex: 1;">
+          <div style="background: #F7F6F3; border-radius: 10px; height: 52px; margin-bottom: 8px; border: 1px solid #E8E6E2;"></div>
+          <div style="font-size: 12px; font-weight: 800; color: #0F0F14;">WarmWhite</div>
+          <div style="font-size: 11px; font-weight: 600; color: #ABABAB;">#F7F6F3 · Screen bg</div>
+        </div>
+        <div style="flex: 1;">
+          <div style="background: #FFFFFF; border-radius: 10px; height: 52px; margin-bottom: 8px; border: 1px solid #EBEBEB;"></div>
+          <div style="font-size: 12px; font-weight: 800; color: #0F0F14;">CardWhite</div>
+          <div style="font-size: 11px; font-weight: 600; color: #ABABAB;">#FFFFFF · Cards</div>
+        </div>
+        <div style="flex: 1;">
+          <div style="background: #EEEDE9; border-radius: 10px; height: 52px; margin-bottom: 8px;"></div>
+          <div style="font-size: 12px; font-weight: 800; color: #0F0F14;">NeutralPill</div>
+          <div style="font-size: 11px; font-weight: 600; color: #ABABAB;">#EEEDE9 · Collapsed pills</div>
+        </div>
+      </div>
+
+      <!-- Text row -->
+      <div style="display: flex; gap: 10px;">
+        <div style="flex: 1;">
+          <div style="background: #0F0F14; border-radius: 10px; height: 52px; margin-bottom: 8px;"></div>
+          <div style="font-size: 12px; font-weight: 800; color: #0F0F14;">NearBlack</div>
+          <div style="font-size: 11px; font-weight: 600; color: #ABABAB;">#0F0F14 · Primary text</div>
+        </div>
+        <div style="flex: 1;">
+          <div style="background: #ABABAB; border-radius: 10px; height: 52px; margin-bottom: 8px;"></div>
+          <div style="font-size: 12px; font-weight: 800; color: #0F0F14;">SubText</div>
+          <div style="font-size: 11px; font-weight: 600; color: #ABABAB;">#ABABAB · Metadata / labels</div>
+        </div>
+        <div style="flex: 1;">
+          <div style="background: #EBEBEB; border-radius: 10px; height: 52px; margin-bottom: 8px;"></div>
+          <div style="font-size: 12px; font-weight: 800; color: #0F0F14;">BorderLight</div>
+          <div style="font-size: 11px; font-weight: 600; color: #ABABAB;">#EBEBEB · Dividers</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── Typography ───────────────────────────────────────────── -->
+    <div style="margin-bottom: 48px;">
+      <div style="font-size: 10px; font-weight: 800; letter-spacing: 2.5px; text-transform: uppercase; color: #0F0F14; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid #0F0F14;">Typography · Nunito</div>
+
+      <div style="background: #FFFFFF; border-radius: 14px; padding: 24px; box-shadow: 0 2px 10px rgba(0,0,0,0.06); display: flex; flex-direction: column; gap: 20px;">
+        <div style="border-bottom: 1px solid #F0F0EC; padding-bottom: 18px;">
+          <div style="font-size: 48px; font-weight: 900; color: #0F0F14; letter-spacing: -2px; line-height: 1;">48px</div>
+          <div style="font-size: 10px; font-weight: 700; color: #ABABAB; margin-top: 4px;">900 Black · displayLarge · Timer numbers, hero display</div>
+        </div>
+        <div style="border-bottom: 1px solid #F0F0EC; padding-bottom: 18px;">
+          <div style="font-size: 32px; font-weight: 800; color: #0F0F14; letter-spacing: -0.5px; line-height: 1;">Routines</div>
+          <div style="font-size: 10px; font-weight: 700; color: #ABABAB; margin-top: 4px;">800 ExtraBold · headlineLarge · Screen titles</div>
+        </div>
+        <div style="border-bottom: 1px solid #F0F0EC; padding-bottom: 18px;">
+          <div style="font-size: 22px; font-weight: 800; color: #0F0F14; letter-spacing: -0.5px;">Routine Complete!</div>
+          <div style="font-size: 10px; font-weight: 700; color: #ABABAB; margin-top: 4px;">800 ExtraBold · headlineMedium · Section headings</div>
+        </div>
+        <div style="border-bottom: 1px solid #F0F0EC; padding-bottom: 18px;">
+          <div style="font-size: 17px; font-weight: 700; color: #0F0F14;">Morning Workout</div>
+          <div style="font-size: 10px; font-weight: 700; color: #ABABAB; margin-top: 4px;">700 Bold · titleLarge · Card names, nav title</div>
+        </div>
+        <div style="border-bottom: 1px solid #F0F0EC; padding-bottom: 18px;">
+          <div style="font-size: 14px; font-style: italic; color: #5A2A10; line-height: 1.75;">Motivation is what gets you started. Habit is what keeps you going.</div>
+          <div style="font-size: 10px; font-weight: 700; color: #ABABAB; margin-top: 4px;">400 Italic · bodyLarge · Quote cards</div>
+        </div>
+        <div style="border-bottom: 1px solid #F0F0EC; padding-bottom: 18px;">
+          <div style="font-size: 13px; font-weight: 600; color: #ABABAB; line-height: 1.6;">Build your first routine and start making your days count.</div>
+          <div style="font-size: 10px; font-weight: 700; color: #ABABAB; margin-top: 4px;">600 SemiBold · bodyMedium · Sub-text, empty state copy</div>
+        </div>
+        <div>
+          <div style="font-size: 10px; font-weight: 800; color: #0F0F14; letter-spacing: 2px; text-transform: uppercase;">Your Routines</div>
+          <div style="font-size: 10px; font-weight: 700; color: #ABABAB; margin-top: 4px;">800 ExtraBold · labelLarge · Section headers (uppercase, 2sp tracked)</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── Radius & Spacing ─────────────────────────────────────── -->
+    <div style="margin-bottom: 48px;">
+      <div style="font-size: 10px; font-weight: 800; letter-spacing: 2.5px; text-transform: uppercase; color: #0F0F14; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid #0F0F14;">Radius &amp; Spacing</div>
+      <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+        <div style="background: #FFFFFF; border-radius: 18px; padding: 14px 18px; box-shadow: 0 2px 6px rgba(0,0,0,0.06); text-align: center;">
+          <div style="font-size: 13px; font-weight: 800; color: #0F0F14;">18dp</div>
+          <div style="font-size: 10px; font-weight: 600; color: #ABABAB;">Cards</div>
+        </div>
+        <div style="background: #FFFFFF; border-radius: 28px; padding: 14px 18px; box-shadow: 0 2px 6px rgba(0,0,0,0.06); text-align: center;">
+          <div style="font-size: 13px; font-weight: 800; color: #0F0F14;">28dp</div>
+          <div style="font-size: 10px; font-weight: 600; color: #ABABAB;">Sheets · FAB</div>
+        </div>
+        <div style="background: #FFFFFF; border-radius: 16px; padding: 14px 18px; box-shadow: 0 2px 6px rgba(0,0,0,0.06); text-align: center;">
+          <div style="font-size: 13px; font-weight: 800; color: #0F0F14;">16dp</div>
+          <div style="font-size: 10px; font-weight: 600; color: #ABABAB;">Buttons</div>
+        </div>
+        <div style="background: #FFFFFF; border-radius: 14px; padding: 14px 18px; box-shadow: 0 2px 6px rgba(0,0,0,0.06); text-align: center;">
+          <div style="font-size: 13px; font-weight: 800; color: #0F0F14;">14dp</div>
+          <div style="font-size: 10px; font-weight: 600; color: #ABABAB;">Inputs</div>
+        </div>
+        <div style="background: #FFFFFF; border-radius: 20px; padding: 14px 18px; box-shadow: 0 2px 6px rgba(0,0,0,0.06); text-align: center;">
+          <div style="font-size: 13px; font-weight: 800; color: #0F0F14;">20dp</div>
+          <div style="font-size: 10px; font-weight: 600; color: #ABABAB;">Pills</div>
+        </div>
+        <div style="background: #FFFFFF; border-radius: 50%; width: 52px; height: 52px; box-shadow: 0 2px 6px rgba(0,0,0,0.06); display: flex; flex-direction: column; align-items: center; justify-content: center;">
+          <div style="font-size: 11px; font-weight: 800; color: #0F0F14;">50%</div>
+          <div style="font-size: 9px; font-weight: 600; color: #ABABAB;">Circle</div>
+        </div>
+      </div>
+
+      <!-- Spacing scale -->
+      <div style="margin-top: 20px; background: #FFFFFF; border-radius: 14px; padding: 18px; box-shadow: 0 2px 6px rgba(0,0,0,0.06);">
+        <div style="font-size: 10px; font-weight: 700; color: #ABABAB; margin-bottom: 14px; letter-spacing: 1px; text-transform: uppercase;">Common spacing</div>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <div style="display: flex; align-items: center; gap: 12px;"><div style="width: 10px; height: 10px; background: #D4773E; border-radius: 2px; flex-shrink: 0;"></div><span style="font-size: 12px; font-weight: 700; color: #0F0F14;">10dp</span><span style="font-size: 11px; color: #ABABAB;">Card gap in list</span></div>
+          <div style="display: flex; align-items: center; gap: 12px;"><div style="width: 12px; height: 12px; background: #D4773E; border-radius: 2px; flex-shrink: 0;"></div><span style="font-size: 12px; font-weight: 700; color: #0F0F14;">12dp</span><span style="font-size: 11px; color: #ABABAB;">Card gap (running screen)</span></div>
+          <div style="display: flex; align-items: center; gap: 12px;"><div style="width: 14px; height: 14px; background: #D4773E; border-radius: 2px; flex-shrink: 0;"></div><span style="font-size: 12px; font-weight: 700; color: #0F0F14;">20dp</span><span style="font-size: 11px; color: #ABABAB;">Horizontal screen padding</span></div>
+          <div style="display: flex; align-items: center; gap: 12px;"><div style="width: 16px; height: 16px; background: #D4773E; border-radius: 2px; flex-shrink: 0;"></div><span style="font-size: 12px; font-weight: 700; color: #0F0F14;">24dp</span><span style="font-size: 11px; color: #ABABAB;">Home screen horizontal padding</span></div>
+          <div style="display: flex; align-items: center; gap: 12px;"><div style="width: 18px; height: 18px; background: #D4773E; border-radius: 2px; flex-shrink: 0;"></div><span style="font-size: 12px; font-weight: 700; color: #0F0F14;">28dp</span><span style="font-size: 11px; color: #ABABAB;">Section header top margin</span></div>
+          <div style="display: flex; align-items: center; gap: 12px;"><div style="width: 20px; height: 20px; background: #D4773E; border-radius: 2px; flex-shrink: 0;"></div><span style="font-size: 12px; font-weight: 700; color: #0F0F14;">30dp</span><span style="font-size: 11px; color: #ABABAB;">Screen header top padding</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── Components ───────────────────────────────────────────── -->
+    <div style="margin-bottom: 48px;">
+      <div style="font-size: 10px; font-weight: 800; letter-spacing: 2.5px; text-transform: uppercase; color: #0F0F14; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid #0F0F14;">Components</div>
+
+      <!-- Buttons -->
+      <div style="font-size: 10px; font-weight: 700; color: #ABABAB; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 12px;">Buttons &amp; FAB</div>
+      <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 24px;">
+        <!-- Primary -->
+        <div style="background: #D4773E; border-radius: 16px; padding: 0 24px; height: 52px; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 14px rgba(212,119,62,0.35);">
+          <span style="font-size: 15px; font-weight: 800; color: white;">Save Routine</span>
+        </div>
+        <!-- Secondary -->
+        <div style="background: #F7EDE5; border-radius: 16px; padding: 0 22px; height: 52px; display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 15px; font-weight: 800; color: #D4773E;">Skip</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="#D4773E"><path d="M6 18l8.5-6L6 6v12z"></path><rect x="16" y="6" width="2.5" height="12" rx="1"></rect></svg>
+        </div>
+        <!-- Extended FAB -->
+        <div style="background: #D4773E; border-radius: 28px; padding: 0 22px; height: 52px; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 14px rgba(212,119,62,0.35);">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+          <span style="font-size: 14px; font-weight: 800; color: white;">Create Routine</span>
+        </div>
+        <!-- Dashed add -->
+        <div style="background: white; border: 1.5px dashed #DDDDE5; border-radius: 14px; padding: 0 20px; height: 48px; display: flex; align-items: center; gap: 8px;">
+          <div style="width: 22px; height: 22px; background: #D4773E; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+          </div>
+          <span style="font-size: 14px; font-weight: 700; color: #D4773E;">Add Task</span>
+        </div>
+      </div>
+
+      <!-- Cards -->
+      <div style="font-size: 10px; font-weight: 700; color: #ABABAB; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 12px;">Cards</div>
+      <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px;">
+        <!-- Routine card -->
+        <div style="background: #FFFFFF; border-radius: 18px; padding: 18px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 10px rgba(0,0,0,0.07);">
+          <div>
+            <div style="font-size: 17px; font-weight: 700; color: #0F0F14; margin-bottom: 5px;">Morning Workout</div>
+            <div style="font-size: 10px; font-weight: 700; color: #ABABAB; text-transform: uppercase; letter-spacing: 1.5px;">45 min · 4 tasks</div>
+          </div>
+          <div style="width: 38px; height: 38px; background: #D4773E; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M8 5.14v14l11-7z"></path></svg>
+          </div>
+        </div>
+        <!-- Quote card -->
+        <div style="background: #F7EDE5; border-radius: 16px; padding: 16px 18px;">
+          <div style="font-size: 13px; font-style: italic; color: #5A2A10; line-height: 1.75; font-weight: 400;">"Motivation is what gets you started. Habit is what keeps you going."</div>
+        </div>
+        <!-- Task row card -->
+        <div style="background: #FFFFFF; border-radius: 18px; padding: 14px 16px; box-shadow: 0 2px 10px rgba(0,0,0,0.07); display: flex; align-items: center; gap: 10px;">
+          <svg width="16" height="14" viewBox="0 0 16 14" fill="none"><line x1="0" y1="1" x2="16" y2="1" stroke="#CACACA" stroke-width="2" stroke-linecap="round"/><line x1="0" y1="7" x2="16" y2="7" stroke="#CACACA" stroke-width="2" stroke-linecap="round"/><line x1="0" y1="13" x2="16" y2="13" stroke="#CACACA" stroke-width="2" stroke-linecap="round"/></svg>
+          <div style="width: 38px; height: 38px; border-radius: 50%; background: #F7EDE5; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0;">🏃</div>
+          <div style="flex: 1; font-size: 16px; font-weight: 700; color: #0F0F14;">Warmup</div>
+          <div style="background: #EEEDE9; border-radius: 20px; padding: 5px 12px; display: flex; align-items: center; gap: 5px;">
+            <span style="font-size: 13px; font-weight: 800; color: #0F0F14;">05:30</span>
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2.5" stroke-linecap="round"><path d="M6 9l6 6 6-6"></path></svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Badges & Pills -->
+      <div style="font-size: 10px; font-weight: 700; color: #ABABAB; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 12px;">Badges &amp; Pills</div>
+      <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 24px;">
+        <!-- Count badge -->
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 6px;">
+          <div style="width: 22px; height: 22px; background: #D4773E; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+            <span style="font-size: 11px; font-weight: 800; color: white; line-height: 1;">3</span>
+          </div>
+          <span style="font-size: 9px; font-weight: 600; color: #ABABAB;">Count badge</span>
+        </div>
+        <!-- Duration pill collapsed -->
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 6px;">
+          <div style="background: #EEEDE9; border-radius: 20px; padding: 5px 12px; display: flex; align-items: center; gap: 5px;">
+            <span style="font-size: 13px; font-weight: 800; color: #0F0F14;">05:30</span>
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2.5" stroke-linecap="round"><path d="M6 9l6 6 6-6"></path></svg>
+          </div>
+          <span style="font-size: 9px; font-weight: 600; color: #ABABAB;">Duration collapsed</span>
+        </div>
+        <!-- Duration pill open -->
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 6px;">
+          <div style="background: #D4773E; border-radius: 20px; padding: 5px 12px; display: flex; align-items: center; gap: 4px;">
+            <span style="font-size: 13px; font-weight: 800; color: white;">05:30</span>
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><path d="M18 15l-6-6-6 6"></path></svg>
+          </div>
+          <span style="font-size: 9px; font-weight: 600; color: #ABABAB;">Duration open</span>
+        </div>
+        <!-- Category tab active -->
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 6px;">
+          <div style="background: #D4773E; border-radius: 20px; padding: 7px 16px;">
+            <span style="font-size: 13px; font-weight: 700; color: white;">Fitness</span>
+          </div>
+          <span style="font-size: 9px; font-weight: 600; color: #ABABAB;">Tab active</span>
+        </div>
+        <!-- Category tab inactive -->
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 6px;">
+          <div style="background: #F7F6F3; border-radius: 20px; padding: 7px 16px;">
+            <span style="font-size: 13px; font-weight: 700; color: #ABABAB;">Wellness</span>
+          </div>
+          <span style="font-size: 9px; font-weight: 600; color: #ABABAB;">Tab inactive</span>
+        </div>
+      </div>
+
+      <!-- Icon circles -->
+      <div style="font-size: 10px; font-weight: 700; color: #ABABAB; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 12px;">Icon Circles</div>
+      <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end; margin-bottom: 24px;">
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 6px;">
+          <div style="width: 52px; height: 52px; border-radius: 50%; background: #F7EDE5; display: flex; align-items: center; justify-content: center; font-size: 26px;">💪</div>
+          <span style="font-size: 9px; font-weight: 600; color: #ABABAB;">Unselected · 52dp</span>
+        </div>
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 6px; position: relative;">
+          <div style="position: relative;">
+            <div style="width: 52px; height: 52px; border-radius: 50%; background: #D4773E; display: flex; align-items: center; justify-content: center; font-size: 26px;">🏃</div>
+            <div style="position: absolute; top: -2px; right: -2px; width: 18px; height: 18px; background: #4CAF50; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid white;">
+              <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            </div>
+          </div>
+          <span style="font-size: 9px; font-weight: 600; color: #ABABAB;">Selected</span>
+        </div>
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 6px;">
+          <div style="width: 38px; height: 38px; border-radius: 50%; background: #F7EDE5; display: flex; align-items: center; justify-content: center; font-size: 20px;">🧘</div>
+          <span style="font-size: 9px; font-weight: 600; color: #ABABAB;">Task icon · 38dp</span>
+        </div>
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 6px;">
+          <div style="width: 36px; height: 36px; border-radius: 50%; background: #EEEDE9; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0F0F14" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"></path></svg>
+          </div>
+          <span style="font-size: 9px; font-weight: 600; color: #ABABAB;">Nav back · 36dp</span>
+        </div>
+      </div>
+
+      <!-- Progress indicator -->
+      <div style="font-size: 10px; font-weight: 700; color: #ABABAB; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 12px;">Progress Indicator</div>
+      <div style="background: #FFFFFF; border-radius: 14px; padding: 18px; box-shadow: 0 2px 6px rgba(0,0,0,0.06); margin-bottom: 24px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+          <div style="display: flex; gap: 6px; align-items: center;">
+            <div style="width: 24px; height: 6px; border-radius: 3px; background: rgba(212,119,62,0.4);"></div>
+            <div style="width: 24px; height: 6px; border-radius: 3px; background: #D4773E;"></div>
+            <div style="width: 24px; height: 6px; border-radius: 3px; background: #DDDDE5;"></div>
+            <div style="width: 24px; height: 6px; border-radius: 3px; background: #DDDDE5;"></div>
+          </div>
+          <span style="font-size: 12px; font-weight: 700; color: #ABABAB;">Task 2 of 4</span>
+        </div>
+        <div style="font-size: 10px; font-weight: 600; color: #ABABAB;">Completed = 40% opacity · Current = full · Upcoming = BorderLight</div>
+      </div>
+
+      <!-- Section header pattern -->
+      <div style="font-size: 10px; font-weight: 700; color: #ABABAB; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 12px;">Section Header Pattern</div>
+      <div style="background: #FFFFFF; border-radius: 14px; padding: 18px; box-shadow: 0 2px 6px rgba(0,0,0,0.06); margin-bottom: 24px;">
+        <div style="padding-bottom: 10px; border-bottom: 2px solid #0F0F14; display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+          <span style="font-size: 10px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; color: #0F0F14; white-space: nowrap;">Your Routines</span>
+          <div style="width: 22px; height: 22px; background: #D4773E; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+            <span style="font-size: 11px; font-weight: 800; color: white; line-height: 1;">3</span>
+          </div>
+        </div>
+        <div style="font-size: 10px; font-weight: 600; color: #ABABAB;">2dp NearBlack underrule · ExtraBold 10sp uppercase · Count badge right</div>
+      </div>
+
+      <!-- Completion stats card -->
+      <div style="font-size: 10px; font-weight: 700; color: #ABABAB; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 12px;">Completion Stats Card</div>
+      <div style="background: #FFFFFF; border-radius: 18px; padding: 20px 24px; box-shadow: 0 2px 10px rgba(0,0,0,0.07); display: flex; align-items: center; margin-bottom: 24px;">
+        <div style="flex: 1; text-align: center; border-right: 1px solid #EBEBEB;">
+          <div style="font-size: 26px; font-weight: 800; color: #0F0F14; letter-spacing: -1px; line-height: 1;">45:30</div>
+          <div style="font-size: 10px; font-weight: 700; color: #ABABAB; letter-spacing: 1.5px; text-transform: uppercase; margin-top: 5px;">Total Time</div>
+        </div>
+        <div style="flex: 1; text-align: center;">
+          <div style="font-size: 26px; font-weight: 800; color: #0F0F14; letter-spacing: -1px; line-height: 1;">4</div>
+          <div style="font-size: 10px; font-weight: 700; color: #ABABAB; letter-spacing: 1.5px; text-transform: uppercase; margin-top: 5px;">Tasks Done</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ─── Rules ─────────────────────────────────────────────────── -->
+    <div style="margin-bottom: 48px;">
+      <div style="font-size: 10px; font-weight: 800; letter-spacing: 2.5px; text-transform: uppercase; color: #0F0F14; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid #0F0F14;">Design Rules</div>
+      <div style="background: #FFFFFF; border-radius: 14px; padding: 20px; box-shadow: 0 2px 6px rgba(0,0,0,0.06); display: flex; flex-direction: column; gap: 14px;">
+        <div style="display: flex; gap: 12px; align-items: flex-start;">
+          <div style="width: 6px; height: 6px; border-radius: 50%; background: #D4773E; margin-top: 5px; flex-shrink: 0;"></div>
+          <div style="font-size: 13px; font-weight: 600; color: #0F0F14; line-height: 1.5;">Card elevation: always 2dp shadow. Never use Material tonal surface colors — use CardWhite + shadow instead.</div>
+        </div>
+        <div style="display: flex; gap: 12px; align-items: flex-start;">
+          <div style="width: 6px; height: 6px; border-radius: 50%; background: #D4773E; margin-top: 5px; flex-shrink: 0;"></div>
+          <div style="font-size: 13px; font-weight: 600; color: #0F0F14; line-height: 1.5;">Tinted surfaces (#F7EDE5) are for <em>content surfaces</em> (quote, icon circles, secondary buttons). Never use them for interactive cards.</div>
+        </div>
+        <div style="display: flex; gap: 12px; align-items: flex-start;">
+          <div style="width: 6px; height: 6px; border-radius: 50%; background: #D4773E; margin-top: 5px; flex-shrink: 0;"></div>
+          <div style="font-size: 13px; font-weight: 600; color: #0F0F14; line-height: 1.5;">All section headers follow the same pattern: ExtraBold 10sp uppercase + 2px NearBlack bottom rule + count badge aligned right.</div>
+        </div>
+        <div style="display: flex; gap: 12px; align-items: flex-start;">
+          <div style="width: 6px; height: 6px; border-radius: 50%; background: #D4773E; margin-top: 5px; flex-shrink: 0;"></div>
+          <div style="font-size: 13px; font-weight: 600; color: #0F0F14; line-height: 1.5;">Bottom sheets always: 28dp top radius, white bg, 40px drag handle centered, consistent padding 20dp horizontal.</div>
+        </div>
+        <div style="display: flex; gap: 12px; align-items: flex-start;">
+          <div style="width: 6px; height: 6px; border-radius: 50%; background: #D4773E; margin-top: 5px; flex-shrink: 0;"></div>
+          <div style="font-size: 13px; font-weight: 600; color: #0F0F14; line-height: 1.5;">No scaffold-provided top app bars. Every screen uses a custom nav bar: 36dp circular back/close button + Nunito ExtraBold title.</div>
+        </div>
+        <div style="display: flex; gap: 12px; align-items: flex-start;">
+          <div style="width: 6px; height: 6px; border-radius: 50%; background: #D4773E; margin-top: 5px; flex-shrink: 0;"></div>
+          <div style="font-size: 13px; font-weight: 600; color: #0F0F14; line-height: 1.5;">Dynamic color must be disabled. The app uses a fixed palette — wallpaper tinting would break the warm white + burnt orange system.</div>
+        </div>
+        <div style="display: flex; gap: 12px; align-items: flex-start;">
+          <div style="width: 6px; height: 6px; border-radius: 50%; background: #D4773E; margin-top: 5px; flex-shrink: 0;"></div>
+          <div style="font-size: 13px; font-weight: 600; color: #0F0F14; line-height: 1.5;">Metadata labels (duration, task count) always: SubText color, ExtraBold, 10sp, uppercase, 1.5sp letter-spacing.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div style="text-align: center; padding: 32px 0; border-top: 1px solid #D8D5CE;">
+      <div style="font-size: 11px; font-weight: 700; color: #ABABAB; letter-spacing: 2px; text-transform: uppercase;">Routines Design System v1.0</div>
+      <div style="font-size: 11px; font-weight: 600; color: #C8C4BC; margin-top: 4px;">Nunito · #D4773E Burnt Orange · #F7F6F3 Warm White</div>
+    </div>
+
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {}
+</script>
+</body>
+</html>
