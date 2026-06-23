@@ -32,4 +32,4 @@ This document tracks the progress of the Routines app development. AI agents sho
 - [x] Skipping or finishing the last task now shows a "Routine Complete 🎉" screen with a Done button
 - [x] Duration picker now includes 30s and 1m presets, plus a "Custom" chip that reveals min/sec text fields
 - [x] Tapping the icon circle slides up a categorized bottom sheet (6 categories × 10 icons)
-- [ ] For each task, remove the chips and let the user choose the time.
+- [ ] I wanna add a rubber band motion to when users Click on the buttons that is the pause button or the skip button as well as the add routine button and also the save routine button Like I wanna have that not just these buttons but I wanna have When elastic some kind of feedback animation for the button so the whenever user clicks so what are my options in Android

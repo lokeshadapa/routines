@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.routines.data.local.RoutineEntity
 import com.example.routines.data.local.TaskEntity
+import com.example.routines.data.local.TaskSummary
 import com.example.routines.data.repository.RoutineRepository
 import com.example.routines.ui.main.DraftTask
 import kotlinx.coroutines.flow.Flow
@@ -27,6 +28,8 @@ class RoutineViewModel(
     fun getTasksForRoutine(routineId: Long): Flow<List<TaskEntity>> {
         return repository.getTasksForRoutine(routineId)
     }
+
+    fun getTaskSummary(routineId: Long): Flow<TaskSummary> = repository.getTaskSummary(routineId)
 
     fun addRoutine(name: String) {
         viewModelScope.launch {

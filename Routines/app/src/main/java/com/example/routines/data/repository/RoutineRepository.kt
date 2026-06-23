@@ -4,6 +4,7 @@ import com.example.routines.data.local.RoutineDao
 import com.example.routines.data.local.RoutineEntity
 import com.example.routines.data.local.TaskDao
 import com.example.routines.data.local.TaskEntity
+import com.example.routines.data.local.TaskSummary
 import kotlinx.coroutines.flow.Flow
 
 class RoutineRepository(
@@ -31,4 +32,6 @@ class RoutineRepository(
     suspend fun deleteTask(task: TaskEntity) = taskDao.deleteTask(task)
 
     suspend fun deleteTasksForRoutine(routineId: Long) = taskDao.deleteTasksForRoutine(routineId)
+
+    fun getTaskSummary(routineId: Long): Flow<TaskSummary> = taskDao.getTaskSummary(routineId)
 }
