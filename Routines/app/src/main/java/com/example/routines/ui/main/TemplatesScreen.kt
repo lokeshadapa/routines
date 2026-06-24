@@ -1,11 +1,14 @@
 package com.example.routines.ui.main
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -178,9 +181,24 @@ private fun TemplateCard(
                         color = SubText
                     )
                 }
+                Spacer(Modifier.width(12.dp))
+                Box(
+                    modifier = Modifier
+                        .size(38.dp)
+                        .background(BurntOrange, CircleShape)
+                        .clickable { onUseThis() },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.Add,
+                        contentDescription = "Use template",
+                        tint = Color.White,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
             }
 
-            Spacer(Modifier.height(14.dp))
+            Spacer(Modifier.height(12.dp))
 
             Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 val taskWord = if (template.tasks.size == 1) "task" else "tasks"
@@ -190,32 +208,16 @@ private fun TemplateCard(
                 ).forEach { label ->
                     Box(
                         modifier = Modifier
-                            .background(NeutralPill, RoundedCornerShape(20.dp))
+                            .background(BurntOrangeLight, RoundedCornerShape(20.dp))
                             .padding(horizontal = 10.dp, vertical = 4.dp)
                     ) {
                         Text(
                             text = label.uppercase(),
                             style = MaterialTheme.typography.labelSmall,
-                            color = SubText
+                            color = BurntOrange
                         )
                     }
                 }
-            }
-
-            Spacer(Modifier.height(16.dp))
-
-            Button(
-                onClick = onUseThis,
-                modifier = Modifier.fillMaxWidth().height(46.dp),
-                shape = RoundedCornerShape(14.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = BurntOrange)
-            ) {
-                Text(
-                    text = "Use This",
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.ExtraBold,
-                    color = Color.White
-                )
             }
         }
     }

@@ -2,25 +2,35 @@ package com.example.routines.ui.main
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.verticalScroll
+import sh.calvin.reorderable.ReorderableItem
+import sh.calvin.reorderable.rememberReorderableLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.automirrored.rounded.Backspace
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.outlined.DeleteOutline
 import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.DragHandle
 import androidx.compose.material.icons.rounded.Edit
@@ -32,7 +42,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.draw.scale
+
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
@@ -40,7 +51,7 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.platform.LocalDensity
+
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -51,7 +62,8 @@ import com.example.routines.theme.*
 data class DraftTask(
     val name: String = "",
     val durationSeconds: Int = 300,
-    val icon: String = "💪"
+    val icon: String = "💪",
+    val id: String = java.util.UUID.randomUUID().toString()
 )
 
 val ICON_CATEGORIES = listOf(
@@ -71,24 +83,56 @@ private fun formatDurationHms(seconds: Int): String {
     else String.format("%02d:%02d", m, s)
 }
 
+private val DAY_LABELS = listOf("M", "T", "W", "T", "F", "S", "S")
+private val DAY_BITS   = listOf(1,   2,   4,   8,  16,  32,  64)
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreateRoutineScreen(
     onBack: () -> Unit,
-    onSave: (String, List<DraftTask>) -> Unit,
+    onSave: (String, String, List<DraftTask>, Int, Boolean, Int, Int) -> Unit,
     initialName: String = "",
+    initialRoutineIcon: String = "",
     initialTasks: List<DraftTask> = listOf(DraftTask("Warmup", 300, "🏃")),
+    initialDaysOfWeek: Int = 0,
+    initialReminderEnabled: Boolean = false,
+    initialReminderHour: Int = 8,
+    initialReminderMinute: Int = 0,
     isEditMode: Boolean = false,
     onDelete: (() -> Unit)? = null
 ) {
     var routineName by remember { mutableStateOf(initialName) }
-    var draftTasks by remember(initialTasks.size) { mutableStateOf(initialTasks) }
+    var routineIcon by remember { mutableStateOf(initialRoutineIcon) }
+    var showRoutineIconPicker by remember { mutableStateOf(false) }
+    var draftTasks by remember { mutableStateOf(initialTasks) }
+    var selectedDays by remember { mutableIntStateOf(initialDaysOfWeek) }
+    var reminderEnabled by remember { mutableStateOf(initialReminderEnabled) }
+    var reminderHour by remember { mutableIntStateOf(initialReminderHour) }
+    var reminderMinute by remember { mutableIntStateOf(initialReminderMinute) }
+    var showTimePicker by remember { mutableStateOf(false) }
 
-    var draggingIndex by remember { mutableIntStateOf(-1) }
-    var pendingDragPx by remember { mutableFloatStateOf(0f) }
-    val density = LocalDensity.current
+    val lazyListState = rememberLazyListState()
+    val reorderableState = rememberReorderableLazyListState(lazyListState) { from, to ->
+        val fromKey = from.key as? String ?: return@rememberReorderableLazyListState
+        val toKey   = to.key   as? String ?: return@rememberReorderableLazyListState
+        val fromIdx = draftTasks.indexOfFirst { it.id == fromKey }
+        val toIdx   = draftTasks.indexOfFirst { it.id == toKey   }
+        if (fromIdx >= 0 && toIdx >= 0) {
+            draftTasks = draftTasks.toMutableList().apply { add(toIdx, removeAt(fromIdx)) }
+        }
+    }
 
     var showDeleteDialog by remember { mutableStateOf(false) }
+    var addTaskPressed by remember { mutableStateOf(false) }
+    val addTaskScale by animateFloatAsState(
+        targetValue = if (addTaskPressed) 0.92f else 1f,
+        animationSpec = if (addTaskPressed) tween(80) else spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessMedium
+        ),
+        label = "addTaskBounce"
+    )
+    val saveSource = remember { MutableInteractionSource() }
 
     if (showDeleteDialog) {
         AlertDialog(
@@ -107,204 +151,290 @@ fun CreateRoutineScreen(
         )
     }
 
+    if (showRoutineIconPicker) {
+        ModalBottomSheet(
+            onDismissRequest = { showRoutineIconPicker = false },
+            sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+            dragHandle = null
+        ) {
+            IconPickerSheetContent(
+                taskName = routineName,
+                selectedIcon = routineIcon,
+                onIconSelected = { icon ->
+                    routineIcon = icon
+                    showRoutineIconPicker = false
+                }
+            )
+        }
+    }
+
     Box(modifier = Modifier.fillMaxSize().background(WarmWhite)) {
-        Column(
+        LazyColumn(
+            state = lazyListState,
             modifier = Modifier
                 .fillMaxSize()
                 .statusBarsPadding()
                 .navigationBarsPadding()
                 .padding(bottom = 88.dp)
-                .verticalScroll(rememberScrollState())
         ) {
-            // Custom nav bar
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 20.dp, end = 20.dp, top = 16.dp, bottom = 16.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Box(
+            // Nav bar
+            item {
+                Row(
                     modifier = Modifier
-                        .size(36.dp)
-                        .background(NeutralPill, CircleShape)
-                        .clickable(onClick = onBack),
-                    contentAlignment = Alignment.Center
+                        .fillMaxWidth()
+                        .padding(start = 20.dp, end = 20.dp, top = 16.dp, bottom = 16.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = "Back", tint = NearBlack, modifier = Modifier.size(18.dp))
-                }
-                Text(
-                    text = if (isEditMode) "Edit Routine" else "New Routine",
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.ExtraBold,
-                    color = NearBlack,
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(start = 12.dp)
-                )
-                if (isEditMode && onDelete != null) {
                     Box(
                         modifier = Modifier
                             .size(36.dp)
-                            .background(Color(0xFFFEE4E4), CircleShape)
-                            .clickable { showDeleteDialog = true },
+                            .background(NeutralPill, CircleShape)
+                            .clickable(onClick = onBack),
                         contentAlignment = Alignment.Center
                     ) {
-                        Icon(Icons.Rounded.Delete, contentDescription = "Delete", tint = Color(0xFFE53E3E), modifier = Modifier.size(16.dp))
+                        Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = "Back", tint = NearBlack, modifier = Modifier.size(18.dp))
+                    }
+                    Text(
+                        text = if (isEditMode) "Edit Routine" else "New Routine",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.ExtraBold,
+                        color = NearBlack,
+                        modifier = Modifier.weight(1f).padding(start = 12.dp)
+                    )
+                    if (isEditMode && onDelete != null) {
+                        Row(
+                            modifier = Modifier
+                                .clickable { showDeleteDialog = true }
+                                .padding(horizontal = 8.dp, vertical = 6.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Icon(Icons.Outlined.DeleteOutline, contentDescription = "Delete routine", tint = Color(0xFFE05252), modifier = Modifier.size(18.dp))
+                            Text("Delete", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Color(0xFFE05252))
+                        }
+                    }
+                }
+                HorizontalDivider(thickness = 1.dp, color = BorderLight)
+            }
+
+            // Routine name + icon card
+            item {
+                Card(
+                    modifier = Modifier.padding(top = 18.dp, start = 20.dp, end = 20.dp).fillMaxWidth(),
+                    shape = RoundedCornerShape(14.dp),
+                    colors = CardDefaults.cardColors(containerColor = CardWhite),
+                    elevation = CardDefaults.cardElevation(2.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        // Icon selector circle
+                        Box(
+                            modifier = Modifier
+                                .size(48.dp)
+                                .background(BurntOrangeLight, CircleShape)
+                                .clickable { showRoutineIconPicker = true },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            if (routineIcon.isNotEmpty()) {
+                                Text(routineIcon, fontSize = 24.sp)
+                            } else {
+                                Icon(Icons.Rounded.Edit, contentDescription = "Pick icon",
+                                    tint = BurntOrange, modifier = Modifier.size(20.dp))
+                            }
+                        }
+                        Spacer(Modifier.width(14.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text("ROUTINE NAME", style = MaterialTheme.typography.labelSmall, color = SubText)
+                            Spacer(modifier = Modifier.height(4.dp))
+                            BasicTextField(
+                                value = routineName,
+                                onValueChange = { routineName = it },
+                                textStyle = TextStyle(
+                                    fontFamily = NunitoFontFamily,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 17.sp,
+                                    color = NearBlack,
+                                    letterSpacing = (-0.3).sp
+                                ),
+                                singleLine = true,
+                                cursorBrush = androidx.compose.ui.graphics.SolidColor(BurntOrange),
+                                modifier = Modifier.fillMaxWidth(),
+                                decorationBox = { inner ->
+                                    if (routineName.isEmpty()) {
+                                        Text("e.g. Morning Workout", style = TextStyle(
+                                            fontFamily = NunitoFontFamily, fontWeight = FontWeight.Bold,
+                                            fontSize = 17.sp, color = SubText, letterSpacing = (-0.3).sp
+                                        ))
+                                    }
+                                    inner()
+                                }
+                            )
+                        }
                     }
                 }
             }
-            HorizontalDivider(thickness = 1.dp, color = BorderLight)
 
-            // Routine name input card
-            Card(
-                modifier = Modifier
-                    .padding(top = 18.dp, start = 20.dp, end = 20.dp)
-                    .fillMaxWidth(),
-                shape = RoundedCornerShape(14.dp),
-                colors = CardDefaults.cardColors(containerColor = CardWhite),
-                elevation = CardDefaults.cardElevation(2.dp)
-            ) {
-                Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp)) {
-                    Text(
-                        text = "ROUTINE NAME",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = SubText
-                    )
-                    Spacer(modifier = Modifier.height(6.dp))
-                    BasicTextField(
-                        value = routineName,
-                        onValueChange = { routineName = it },
-                        textStyle = TextStyle(
-                            fontFamily = NunitoFontFamily,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 17.sp,
-                            color = NearBlack,
-                            letterSpacing = (-0.3).sp
-                        ),
-                        singleLine = true,
-                        cursorBrush = androidx.compose.ui.graphics.SolidColor(BurntOrange),
+
+            // Schedule — day picker
+            item {
+                Column(modifier = Modifier.padding(top = 22.dp, start = 20.dp, end = 20.dp)) {
+                    Text("SCHEDULE", style = MaterialTheme.typography.labelLarge, color = NearBlack)
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                        DAY_LABELS.forEachIndexed { i, label ->
+                            val bit = DAY_BITS[i]
+                            val selected = selectedDays and bit != 0
+                            Box(
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .background(if (selected) BurntOrange else NeutralPill, CircleShape)
+                                    .clickable(indication = null, interactionSource = remember { MutableInteractionSource() }) {
+                                        selectedDays = if (selected) selectedDays and bit.inv() else selectedDays or bit
+                                    },
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(label, fontSize = 13.sp, fontWeight = FontWeight.ExtraBold,
+                                    color = if (selected) Color.White else SubText)
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Reminder toggle + time picker
+            item {
+                Column(modifier = Modifier.padding(top = 22.dp, start = 20.dp, end = 20.dp)) {
+                    Row(
                         modifier = Modifier.fillMaxWidth(),
-                        decorationBox = { inner ->
-                            if (routineName.isEmpty()) {
-                                Text("e.g. Morning Workout", style = TextStyle(
-                                    fontFamily = NunitoFontFamily, fontWeight = FontWeight.Bold,
-                                    fontSize = 17.sp, color = SubText, letterSpacing = (-0.3).sp
-                                ))
-                            }
-                            inner()
-                        }
-                    )
-                }
-            }
-
-            // Tasks section header — no divider (design spec)
-            Row(
-                modifier = Modifier
-                    .padding(top = 22.dp, start = 20.dp, end = 20.dp)
-                    .fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "TASKS",
-                    style = MaterialTheme.typography.labelLarge,
-                    color = NearBlack
-                )
-                Box(
-                    modifier = Modifier
-                        .size(22.dp)
-                        .background(BurntOrange, CircleShape),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "${draftTasks.size}",
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.ExtraBold,
-                        color = Color.White,
-                        style = androidx.compose.ui.text.TextStyle(
-                            platformStyle = androidx.compose.ui.text.PlatformTextStyle(includeFontPadding = false),
-                            lineHeight = 11.sp
-                        )
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            draftTasks.forEachIndexed { index, task ->
-                DraftTaskCard(
-                    task = task,
-                    isDragging = draggingIndex == index,
-                    onTaskChange = { updated ->
-                        val newList = draftTasks.toMutableList()
-                        newList[index] = updated
-                        draftTasks = newList
-                    },
-                    onDelete = {
-                        draftTasks = draftTasks.toMutableList().also { it.removeAt(index) }
-                    },
-                    onDragStart = {
-                        draggingIndex = index
-                        pendingDragPx = 0f
-                    },
-                    onDrag = { deltaY ->
-                        pendingDragPx += deltaY
-                        val threshold = with(density) { 100.dp.toPx() }
-                        if (pendingDragPx > threshold && draggingIndex < draftTasks.lastIndex) {
-                            draftTasks = draftTasks.toMutableList().apply {
-                                add(draggingIndex + 1, removeAt(draggingIndex))
-                            }
-                            draggingIndex++
-                            pendingDragPx -= threshold
-                        } else if (pendingDragPx < -threshold && draggingIndex > 0) {
-                            draftTasks = draftTasks.toMutableList().apply {
-                                add(draggingIndex - 1, removeAt(draggingIndex))
-                            }
-                            draggingIndex--
-                            pendingDragPx += threshold
-                        }
-                    },
-                    onDragEnd = {
-                        draggingIndex = -1
-                        pendingDragPx = 0f
-                    },
-                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 5.dp)
-                )
-            }
-
-            // Add Task button — dashed warm-orange border per design
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 12.dp, start = 20.dp, end = 20.dp)
-                    .clip(RoundedCornerShape(14.dp))
-                    .background(CardWhite)
-                    .drawBehind {
-                        drawRoundRect(
-                            color = Color(0xFFE8D0C0),
-                            size = size,
-                            cornerRadius = androidx.compose.ui.geometry.CornerRadius(14.dp.toPx()),
-                            style = Stroke(
-                                width = 1.5.dp.toPx(),
-                                pathEffect = PathEffect.dashPathEffect(floatArrayOf(12f, 8f))
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text("REMINDER", style = MaterialTheme.typography.labelLarge, color = NearBlack)
+                        Switch(
+                            checked = reminderEnabled,
+                            onCheckedChange = { reminderEnabled = it },
+                            colors = SwitchDefaults.colors(
+                                checkedThumbColor = Color.White, checkedTrackColor = BurntOrange,
+                                uncheckedThumbColor = Color.White, uncheckedTrackColor = NeutralPill
                             )
                         )
                     }
-                    .clickable { draftTasks = draftTasks + DraftTask("New Task", 300, "✨") }
-                    .padding(horizontal = 18.dp, vertical = 14.dp),
-                contentAlignment = Alignment.Center
-            ) {
+                    if (reminderEnabled) {
+                        Spacer(modifier = Modifier.height(10.dp))
+                        val displayHour = if (reminderHour % 12 == 0) 12 else reminderHour % 12
+                        val amPm = if (reminderHour < 12) "AM" else "PM"
+                        val timeLabel = String.format("%d:%02d %s", displayHour, reminderMinute, amPm)
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(NeutralPill)
+                                .clickable { showTimePicker = true }
+                                .padding(horizontal = 16.dp, vertical = 12.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(timeLabel, fontSize = 22.sp, fontWeight = FontWeight.ExtraBold, color = NearBlack)
+                            Text("Change", style = MaterialTheme.typography.labelLarge, color = BurntOrange)
+                        }
+                    }
+                }
+            }
+
+            // Tasks section header
+            item {
                 Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.padding(top = 22.dp, start = 20.dp, end = 20.dp).fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+                    Text("TASKS", style = MaterialTheme.typography.labelLarge, color = NearBlack)
                     Box(
                         modifier = Modifier.size(22.dp).background(BurntOrange, CircleShape),
                         contentAlignment = Alignment.Center
                     ) {
-                        Icon(Icons.Filled.Add, contentDescription = null, tint = Color.White, modifier = Modifier.size(12.dp))
+                        Text(
+                            text = "${draftTasks.size}",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.ExtraBold,
+                            color = Color.White,
+                            style = androidx.compose.ui.text.TextStyle(
+                                platformStyle = androidx.compose.ui.text.PlatformTextStyle(includeFontPadding = false),
+                                lineHeight = 11.sp
+                            )
+                        )
                     }
-                    Text("Add Task", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = BurntOrange)
+                }
+            }
+
+            item { Spacer(modifier = Modifier.height(12.dp)) }
+
+            // Reorderable task items — card follows finger, others slide in real time
+            itemsIndexed(draftTasks, key = { _, task -> task.id }) { index, task ->
+                ReorderableItem(reorderableState, key = task.id) { isDragging ->
+                    DraftTaskCard(
+                        task = task,
+                        position = index + 1,
+                        isDragging = isDragging,
+                        onTaskChange = { updated ->
+                            draftTasks = draftTasks.toMutableList().also { it[index] = updated }
+                        },
+                        onDelete = {
+                            draftTasks = draftTasks.toMutableList().also { it.removeAt(index) }
+                        },
+                        dragHandleModifier = Modifier.draggableHandle(),
+                        modifier = Modifier.padding(horizontal = 20.dp, vertical = 5.dp)
+                    )
+                }
+            }
+
+            // Add Task button — dashed warm-orange border per design
+            item {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 12.dp, start = 20.dp, end = 20.dp)
+                        .scale(addTaskScale)
+                        .clip(RoundedCornerShape(14.dp))
+                        .background(CardWhite)
+                        .drawBehind {
+                            drawRoundRect(
+                                color = Color(0xFFC2E0DA),
+                                size = size,
+                                cornerRadius = androidx.compose.ui.geometry.CornerRadius(14.dp.toPx()),
+                                style = Stroke(
+                                    width = 1.5.dp.toPx(),
+                                    pathEffect = PathEffect.dashPathEffect(floatArrayOf(12f, 8f))
+                                )
+                            )
+                        }
+                        .pointerInput(Unit) {
+                            detectTapGestures(
+                                onPress = {
+                                    addTaskPressed = true
+                                    tryAwaitRelease()
+                                    addTaskPressed = false
+                                },
+                                onTap = { draftTasks = draftTasks + DraftTask("New Task", 300, "✨") }
+                            )
+                        }
+                        .padding(horizontal = 18.dp, vertical = 14.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(
+                            modifier = Modifier.size(22.dp).background(BurntOrange, CircleShape),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(Icons.Filled.Add, contentDescription = null, tint = Color.White, modifier = Modifier.size(12.dp))
+                        }
+                        Text("Add Task", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = BurntOrange)
+                    }
                 }
             }
         }
@@ -325,7 +455,7 @@ fun CreateRoutineScreen(
         Button(
             onClick = {
                 if (routineName.isNotBlank() && draftTasks.isNotEmpty()) {
-                    onSave(routineName, draftTasks)
+                    onSave(routineName, routineIcon, draftTasks, selectedDays, reminderEnabled, reminderHour, reminderMinute)
                 }
             },
             modifier = Modifier
@@ -333,12 +463,33 @@ fun CreateRoutineScreen(
                 .align(Alignment.BottomCenter)
                 .navigationBarsPadding()
                 .padding(horizontal = 20.dp, vertical = 20.dp)
-                .height(52.dp),
+                .height(52.dp)
+                .bouncyPress(saveSource),
             shape = RoundedCornerShape(16.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = BurntOrange)
+            colors = ButtonDefaults.buttonColors(containerColor = BurntOrange),
+            interactionSource = saveSource
         ) {
             Text("Save Routine", fontSize = 16.sp, fontWeight = FontWeight.ExtraBold, color = Color.White)
         }
+    }
+
+    // Time picker dialog
+    if (showTimePicker) {
+        val timeState = rememberTimePickerState(initialHour = reminderHour, initialMinute = reminderMinute, is24Hour = false)
+        AlertDialog(
+            onDismissRequest = { showTimePicker = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    reminderHour = timeState.hour
+                    reminderMinute = timeState.minute
+                    showTimePicker = false
+                }) { Text("OK", color = BurntOrange) }
+            },
+            dismissButton = {
+                TextButton(onClick = { showTimePicker = false }) { Text("Cancel") }
+            },
+            text = { TimePicker(state = timeState) }
+        )
     }
 }
 
@@ -346,16 +497,26 @@ fun CreateRoutineScreen(
 @Composable
 fun DraftTaskCard(
     task: DraftTask,
+    position: Int = 0,
     isDragging: Boolean,
     onTaskChange: (DraftTask) -> Unit,
     onDelete: () -> Unit,
-    onDragStart: () -> Unit,
-    onDrag: (Float) -> Unit,
-    onDragEnd: () -> Unit,
+    dragHandleModifier: Modifier = Modifier,
     modifier: Modifier = Modifier
 ) {
     var showIconPicker by remember { mutableStateOf(false) }
     var showDurationPicker by remember { mutableStateOf(false) }
+
+    val liftScale by animateFloatAsState(
+        targetValue = if (isDragging) 1.04f else 1f,
+        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow),
+        label = "liftScale"
+    )
+    val cardBg by animateColorAsState(
+        targetValue = if (isDragging) Color(0xFFFEF5F0) else CardWhite,
+        animationSpec = tween(200),
+        label = "cardBg"
+    )
 
     if (showIconPicker) {
         ModalBottomSheet(
@@ -396,10 +557,16 @@ fun DraftTaskCard(
     }
 
     Card(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier
+            .fillMaxWidth()
+            .scale(liftScale)
+            .then(
+                if (isDragging) Modifier.border(1.5.dp, BurntOrange.copy(alpha = 0.35f), RoundedCornerShape(18.dp))
+                else Modifier
+            ),
         shape = RoundedCornerShape(18.dp),
-        colors = CardDefaults.cardColors(containerColor = CardWhite),
-        elevation = CardDefaults.cardElevation(defaultElevation = if (isDragging) 8.dp else 2.dp)
+        colors = CardDefaults.cardColors(containerColor = cardBg),
+        elevation = CardDefaults.cardElevation(defaultElevation = if (isDragging) 12.dp else 2.dp)
     ) {
         Row(
             modifier = Modifier
@@ -408,22 +575,23 @@ fun DraftTaskCard(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            Icon(
-                imageVector = Icons.Rounded.DragHandle,
-                contentDescription = "Drag to reorder",
-                tint = Color(0xFFCACACA),
-                modifier = Modifier.pointerInput(Unit) {
-                    detectDragGestures(
-                        onDragStart = { onDragStart() },
-                        onDrag = { change, dragAmount ->
-                            change.consume()
-                            onDrag(dragAmount.y)
-                        },
-                        onDragEnd = onDragEnd,
-                        onDragCancel = onDragEnd
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Icon(
+                    imageVector = Icons.Rounded.DragHandle,
+                    contentDescription = "Drag to reorder",
+                    tint = if (isDragging) BurntOrange else Color(0xFFCACACA),
+                    modifier = dragHandleModifier
+                )
+                if (position > 0) {
+                    Text(
+                        text = String.format("%02d", position),
+                        fontSize = 9.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        color = if (isDragging) BurntOrange else Color(0xFFCACACA),
+                        letterSpacing = 0.5.sp
                     )
                 }
-            )
+            }
 
             Box(modifier = Modifier.size(42.dp)) {
                 Box(

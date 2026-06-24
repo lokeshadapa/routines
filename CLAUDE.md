@@ -66,6 +66,16 @@ Compose UI → ViewModel → Repository → Room DAOs → SQLite
 - Keep the data model flexible so that new task types can be added to a routine without restructuring the schema.
 - All background work must use Kotlin Coroutines/Flow — no threads or callbacks.
 
+## Testing
+
+See `Routines/test-framework.md` for the full testing guide — layer structure, patterns for DAO tests, migration tests, Robolectric tests, and TDD workflow for new features.
+
+Quick commands (run from `Routines/`):
+```bash
+./gradlew :app:testDebugUnitTest          # unit + Robolectric (no device)
+./gradlew :app:connectedDebugAndroidTest  # Room DAO + migration tests (device required)
+```
+
 ## Pending Work (`status.md` Phase 4)
 
 - Animations and screen transitions

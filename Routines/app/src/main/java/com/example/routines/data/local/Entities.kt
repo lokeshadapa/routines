@@ -10,7 +10,13 @@ data class RoutineEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val name: String,
     val createdAt: Long = System.currentTimeMillis(),
-    val lastModifiedAt: Long = System.currentTimeMillis()
+    val lastModifiedAt: Long = System.currentTimeMillis(),
+    // Bitmask: bit 0=Mon, 1=Tue, 2=Wed, 3=Thu, 4=Fri, 5=Sat, 6=Sun. 0 = no schedule.
+    val daysOfWeek: Int = 0,
+    val reminderEnabled: Boolean = false,
+    val reminderHour: Int = 8,
+    val reminderMinute: Int = 0,
+    val icon: String = ""
 )
 
 @Entity(

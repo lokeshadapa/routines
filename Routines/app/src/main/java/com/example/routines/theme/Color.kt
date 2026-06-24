@@ -2,11 +2,11 @@ package com.example.routines.theme
 
 import androidx.compose.ui.graphics.Color
 
-val BurntOrange      = Color(0xFFD4773E)
-val BurntOrangeLight = Color(0xFFF7EDE5)
-val WarmWhite        = Color(0xFFF7F6F3)
+val BurntOrange      = Color(0xFF1FA784)   // Mint — primary accent
+val BurntOrangeLight = Color(0xFFDFF4EE)   // Light mint tint — tinted surfaces
+val WarmWhite        = Color(0xFFF3F8F6)   // Cool mint-white — screen background
 val CardWhite        = Color(0xFFFFFFFF)
 val NearBlack        = Color(0xFF0F0F14)
 val SubText          = Color(0xFFABABAB)
-val BorderLight      = Color(0xFFEBEBEB)
-val NeutralPill      = Color(0xFFEEEDE9)
+val BorderLight      = Color(0xFFE3ECEA)
+val NeutralPill      = Color(0xFFE5EDEB)

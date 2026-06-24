@@ -1,8 +1,10 @@
 package com.example.routines.ui.viewmodel
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.example.routines.ReminderScheduler
 import com.example.routines.data.local.RoutineEntity
 import com.example.routines.data.local.TaskEntity
 import com.example.routines.data.local.TaskSummary
@@ -15,8 +17,9 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class RoutineViewModel(
+    application: Application,
     private val repository: RoutineRepository
-) : ViewModel() {
+) : AndroidViewModel(application) {
 
     val allRoutines: StateFlow<List<RoutineEntity>> = repository.getAllRoutines()
         .stateIn(
@@ -37,50 +40,55 @@ class RoutineViewModel(
         }
     }
 
-    fun saveRoutineWithTasks(name: String, tasks: List<DraftTask>) {
+    fun saveRoutineWithTasks(
+        name: String, icon: String = "", tasks: List<DraftTask>, daysOfWeek: Int = 0,
+        reminderEnabled: Boolean = false, reminderHour: Int = 8, reminderMinute: Int = 0
+    ) {
         viewModelScope.launch {
-            val routineId = repository.insertRoutine(RoutineEntity(name = name))
-            val taskEntities = tasks.mapIndexed { index, draft ->
-                TaskEntity(
-                    routineId = routineId,
-                    name = draft.name,
-                    durationSeconds = draft.durationSeconds,
-                    icon = draft.icon,
-                    orderPosition = index
-                )
-            }
-            repository.insertTasks(taskEntities)
+            val entity = RoutineEntity(
+                name = name, icon = icon, daysOfWeek = daysOfWeek,
+                reminderEnabled = reminderEnabled, reminderHour = reminderHour, reminderMinute = reminderMinute
+            )
+            val routineId = repository.insertRoutine(entity)
+            repository.insertTasks(tasks.mapIndexed { index, draft ->
+                TaskEntity(routineId = routineId, name = draft.name, durationSeconds = draft.durationSeconds, icon = draft.icon, orderPosition = index)
+            })
+            ReminderScheduler.scheduleReminder(getApplication(), entity.copy(id = routineId))
         }
     }
 
-    fun updateRoutineWithTasks(routineId: Long, name: String, tasks: List<DraftTask>) {
+    fun updateRoutineWithTasks(
+        routineId: Long, name: String, icon: String = "", tasks: List<DraftTask>, daysOfWeek: Int = 0,
+        reminderEnabled: Boolean = false, reminderHour: Int = 8, reminderMinute: Int = 0
+    ) {
         viewModelScope.launch {
             val existing = repository.getRoutineById(routineId) ?: return@launch
-            repository.updateRoutine(existing.copy(name = name, lastModifiedAt = System.currentTimeMillis()))
+            val updated = existing.copy(
+                name = name, icon = icon, daysOfWeek = daysOfWeek,
+                reminderEnabled = reminderEnabled, reminderHour = reminderHour, reminderMinute = reminderMinute,
+                lastModifiedAt = System.currentTimeMillis()
+            )
+            repository.updateRoutine(updated)
             repository.deleteTasksForRoutine(routineId)
             repository.insertTasks(tasks.mapIndexed { index, draft ->
-                TaskEntity(
-                    routineId = routineId,
-                    name = draft.name,
-                    durationSeconds = draft.durationSeconds,
-                    icon = draft.icon,
-                    orderPosition = index
-                )
+                TaskEntity(routineId = routineId, name = draft.name, durationSeconds = draft.durationSeconds, icon = draft.icon, orderPosition = index)
             })
+            ReminderScheduler.scheduleReminder(getApplication(), updated)
         }
     }
 
     fun deleteRoutine(routine: RoutineEntity) {
         viewModelScope.launch {
+            ReminderScheduler.cancelReminder(getApplication(), routine.id)
             repository.deleteRoutine(routine)
         }
     }
 
     // Factory for manual DI (no Hilt)
-    class Factory(private val repository: RoutineRepository) : ViewModelProvider.Factory {
+    class Factory(private val application: Application, private val repository: RoutineRepository) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
-        override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            return RoutineViewModel(repository) as T
+        override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
+            return RoutineViewModel(application, repository) as T
         }
     }
 }

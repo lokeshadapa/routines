@@ -3,6 +3,7 @@ package com.example.routines
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -11,8 +12,12 @@ import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Explore
+import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.rounded.Explore
 import androidx.compose.material.icons.rounded.Home
 import androidx.compose.material3.Icon
@@ -23,9 +28,13 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.shape.RoundedCornerShape
 import com.example.routines.theme.BurntOrange
 import com.example.routines.theme.BurntOrangeLight
 import com.example.routines.theme.CardWhite
@@ -96,8 +105,8 @@ fun MainNavigation(viewModel: RoutineViewModel) {
                 is Screen.CreateRoutine -> {
                     CreateRoutineScreen(
                         onBack = { currentScreen = Screen.Home },
-                        onSave = { name, tasks ->
-                            viewModel.saveRoutineWithTasks(name, tasks)
+                        onSave = { name, tasks, daysOfWeek, reminderEnabled, reminderHour, reminderMinute ->
+                            viewModel.saveRoutineWithTasks(name, tasks, daysOfWeek, reminderEnabled, reminderHour, reminderMinute)
                             currentScreen = Screen.Home
                         }
                     )
@@ -107,8 +116,8 @@ fun MainNavigation(viewModel: RoutineViewModel) {
                         initialName = screen.name,
                         initialTasks = screen.tasks,
                         onBack = { currentScreen = Screen.Templates },
-                        onSave = { name, tasks ->
-                            viewModel.saveRoutineWithTasks(name, tasks)
+                        onSave = { name, tasks, daysOfWeek, reminderEnabled, reminderHour, reminderMinute ->
+                            viewModel.saveRoutineWithTasks(name, tasks, daysOfWeek, reminderEnabled, reminderHour, reminderMinute)
                             currentScreen = Screen.Home
                         }
                     )
@@ -122,10 +131,14 @@ fun MainNavigation(viewModel: RoutineViewModel) {
                         CreateRoutineScreen(
                             initialName = routine.name,
                             initialTasks = tasks.map { DraftTask(it.name, it.durationSeconds, it.icon) },
+                            initialDaysOfWeek = routine.daysOfWeek,
+                            initialReminderEnabled = routine.reminderEnabled,
+                            initialReminderHour = routine.reminderHour,
+                            initialReminderMinute = routine.reminderMinute,
                             isEditMode = true,
                             onBack = { currentScreen = Screen.Home },
-                            onSave = { name, draftTasks ->
-                                viewModel.updateRoutineWithTasks(screen.routineId, name, draftTasks)
+                            onSave = { name, draftTasks, daysOfWeek, reminderEnabled, reminderHour, reminderMinute ->
+                                viewModel.updateRoutineWithTasks(screen.routineId, name, draftTasks, daysOfWeek, reminderEnabled, reminderHour, reminderMinute)
                                 currentScreen = Screen.Home
                             },
                             onDelete = {
@@ -161,45 +174,70 @@ fun MainNavigation(viewModel: RoutineViewModel) {
             enter = slideInVertically { it } + fadeIn(tween(200)),
             exit = slideOutVertically { it } + fadeOut(tween(200))
         ) {
-            NavigationBar(
-                containerColor = CardWhite,
-                tonalElevation = 0.dp,
-                modifier = Modifier.navigationBarsPadding()
+            val navShape = RoundedCornerShape(28.dp)
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .navigationBarsPadding()
+                    .padding(start = 24.dp, end = 24.dp, bottom = 16.dp)
             ) {
-                NavigationBarItem(
-                    selected = currentScreen is Screen.Home,
-                    onClick = { currentScreen = Screen.Home },
-                    icon = {
-                        Icon(Icons.Rounded.Home, contentDescription = "Home")
-                    },
-                    label = {
-                        Text("Home", fontSize = 11.sp, fontWeight = FontWeight.Bold)
-                    },
-                    colors = NavigationBarItemDefaults.colors(
-                        selectedIconColor = BurntOrange,
-                        selectedTextColor = BurntOrange,
-                        indicatorColor = BurntOrangeLight,
-                        unselectedIconColor = SubText,
-                        unselectedTextColor = SubText
+                NavigationBar(
+                    containerColor = CardWhite,
+                    tonalElevation = 0.dp,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .shadow(elevation = 16.dp, shape = navShape, ambientColor = Color(0x22000000), spotColor = Color(0x33000000))
+                        .clip(navShape)
+                ) {
+                    val homeSelected = currentScreen is Screen.Home
+                    NavigationBarItem(
+                        selected = homeSelected,
+                        onClick = { currentScreen = Screen.Home },
+                        icon = {
+                            Crossfade(targetState = homeSelected, animationSpec = tween(220), label = "home_icon") { sel ->
+                                Icon(if (sel) Icons.Rounded.Home else Icons.Outlined.Home, contentDescription = "Home")
+                            }
+                        },
+                        label = {
+                            Text(
+                                "Home",
+                                fontSize = 11.sp,
+                                fontWeight = if (homeSelected) FontWeight.ExtraBold else FontWeight.Medium
+                            )
+                        },
+                        colors = NavigationBarItemDefaults.colors(
+                            selectedIconColor = BurntOrange,
+                            selectedTextColor = BurntOrange,
+                            indicatorColor = BurntOrangeLight,
+                            unselectedIconColor = SubText,
+                            unselectedTextColor = SubText
+                        )
                     )
-                )
-                NavigationBarItem(
-                    selected = currentScreen is Screen.Templates,
-                    onClick = { currentScreen = Screen.Templates },
-                    icon = {
-                        Icon(Icons.Rounded.Explore, contentDescription = "Explore")
-                    },
-                    label = {
-                        Text("Explore", fontSize = 11.sp, fontWeight = FontWeight.Bold)
-                    },
-                    colors = NavigationBarItemDefaults.colors(
-                        selectedIconColor = BurntOrange,
-                        selectedTextColor = BurntOrange,
-                        indicatorColor = BurntOrangeLight,
-                        unselectedIconColor = SubText,
-                        unselectedTextColor = SubText
+                    val exploreSelected = currentScreen is Screen.Templates
+                    NavigationBarItem(
+                        selected = exploreSelected,
+                        onClick = { currentScreen = Screen.Templates },
+                        icon = {
+                            Crossfade(targetState = exploreSelected, animationSpec = tween(220), label = "explore_icon") { sel ->
+                                Icon(if (sel) Icons.Rounded.Explore else Icons.Outlined.Explore, contentDescription = "Explore")
+                            }
+                        },
+                        label = {
+                            Text(
+                                "Explore",
+                                fontSize = 11.sp,
+                                fontWeight = if (exploreSelected) FontWeight.ExtraBold else FontWeight.Medium
+                            )
+                        },
+                        colors = NavigationBarItemDefaults.colors(
+                            selectedIconColor = BurntOrange,
+                            selectedTextColor = BurntOrange,
+                            indicatorColor = BurntOrangeLight,
+                            unselectedIconColor = SubText,
+                            unselectedTextColor = SubText
+                        )
                     )
-                )
+                }
             }
         }
     }

@@ -2,6 +2,7 @@ package com.example.routines.ui.main
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -16,18 +17,37 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.routines.data.local.RoutineEntity
 import com.example.routines.data.local.TaskSummary
 import com.example.routines.theme.*
+import com.example.routines.DAY_SHORT
+import com.example.routines.formatDuration
+import com.example.routines.formatScheduleDays
 import com.example.routines.ui.viewmodel.RoutineViewModel
 import kotlinx.coroutines.delay
+import java.util.Calendar
+
+private fun timeGreeting(): String {
+    val hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
+    return when {
+        hour < 5  -> "Good night"
+        hour < 12 -> "Good morning"
+        hour < 17 -> "Good afternoon"
+        hour < 21 -> "Good evening"
+        else      -> "Good night"
+    }
+}
 
 val QUOTES = listOf(
     "The secret of your future is hidden in your daily routine.",
@@ -52,17 +72,6 @@ val QUOTES = listOf(
     "You'll never change your life until you change something you do daily."
 )
 
-private fun formatDuration(totalSeconds: Int): String {
-    val h = totalSeconds / 3600
-    val m = (totalSeconds % 3600) / 60
-    return when {
-        h > 0 && m > 0 -> "${h}h ${m} min"
-        h > 0           -> "${h}h"
-        m > 0           -> "${m} min"
-        else            -> "${totalSeconds}s"
-    }
-}
-
 @Composable
 fun HomeScreen(
     viewModel: RoutineViewModel,
@@ -76,11 +85,27 @@ fun HomeScreen(
 
     val selectedQuote = remember { QUOTES.random() }
     var displayedQuote by remember { mutableStateOf("") }
+    var typingComplete by remember { mutableStateOf(false) }
+    var cursorVisible by remember { mutableStateOf(true) }
 
     LaunchedEffect(selectedQuote) {
+        typingComplete = false
+        displayedQuote = ""
         for (i in selectedQuote.indices) {
             displayedQuote = selectedQuote.substring(0, i + 1)
-            delay(40)
+            delay(38)
+        }
+        typingComplete = true
+    }
+
+    LaunchedEffect(typingComplete) {
+        if (!typingComplete) {
+            while (true) {
+                delay(480)
+                cursorVisible = !cursorVisible
+            }
+        } else {
+            cursorVisible = false
         }
     }
 
@@ -90,8 +115,15 @@ fun HomeScreen(
             contentPadding = PaddingValues(bottom = 180.dp)
         ) {
             item {
-                // Header
+                // Header with time greeting
                 Column(modifier = Modifier.padding(top = 30.dp, start = 24.dp, end = 24.dp)) {
+                    Text(
+                        text = timeGreeting(),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = SubText,
+                        letterSpacing = 0.5.sp
+                    )
+                    Spacer(modifier = Modifier.height(2.dp))
                     Text(
                         text = "Routines",
                         style = MaterialTheme.typography.headlineLarge,
@@ -102,27 +134,58 @@ fun HomeScreen(
                         modifier = Modifier
                             .width(48.dp)
                             .height(2.dp)
-                            .background(NearBlack)
+                            .background(BurntOrange)
                     )
                 }
 
-                // Quote card
-                Card(
+                // Quote card with decorative quotation mark
+                Box(
                     modifier = Modifier
-                        .padding(top = 22.dp, start = 20.dp, end = 20.dp)
-                        .fillMaxWidth(),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(containerColor = BurntOrangeLight),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+                        .padding(top = 18.dp, start = 20.dp, end = 20.dp)
+                        .fillMaxWidth()
                 ) {
-                    Text(
-                        text = "\"$displayedQuote\"",
-                        style = MaterialTheme.typography.bodyLarge,
-                        fontStyle = FontStyle.Italic,
-                        color = Color(0xFF5A2A10),
-                        minLines = 2,
-                        modifier = Modifier.padding(horizontal = 18.dp, vertical = 16.dp)
-                    )
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = CardDefaults.cardColors(containerColor = BurntOrangeLight),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(start = 18.dp, end = 18.dp, top = 14.dp, bottom = 16.dp),
+                            verticalAlignment = Alignment.Top
+                        ) {
+                            Text(
+                                text = "“",
+                                fontSize = 48.sp,
+                                fontWeight = FontWeight.Black,
+                                color = BurntOrange.copy(alpha = 0.4f),
+                                lineHeight = 36.sp,
+                                modifier = Modifier.offset(y = (-4).dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = buildAnnotatedString {
+                                    append(displayedQuote)
+                                    if (!typingComplete) {
+                                        if (cursorVisible) {
+                                            withStyle(SpanStyle(color = BurntOrange, fontStyle = FontStyle.Normal)) {
+                                                append("_")
+                                            }
+                                        }
+                                    } else {
+                                        append("\u201D")
+                                    }
+                                },
+                                style = MaterialTheme.typography.bodyLarge,
+                                fontStyle = FontStyle.Italic,
+                                color = Color(0xFF0E4D3A),
+                                minLines = 2,
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .padding(top = 8.dp)
+                            )
+                        }
+                    }
                 }
             }
 
@@ -136,50 +199,51 @@ fun HomeScreen(
             } else {
                 item {
                     // Section header
-                    Row(
+                    Column(
                         modifier = Modifier
                             .padding(top = 28.dp, start = 24.dp, end = 24.dp)
-                            .fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
+                            .fillMaxWidth()
                     ) {
-                        Column(modifier = Modifier.weight(1f)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth().padding(bottom = 10.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
                             Text(
                                 text = "YOUR ROUTINES",
                                 style = MaterialTheme.typography.labelLarge,
                                 color = NearBlack
                             )
-                            Spacer(modifier = Modifier.height(10.dp))
-                            HorizontalDivider(thickness = 2.dp, color = NearBlack)
-                        }
-                        Spacer(modifier = Modifier.width(12.dp))
-                        val badgeEmpty = routines.isEmpty()
-                        Box(
-                            modifier = Modifier
-                                .size(22.dp)
-                                .background(
-                                    if (badgeEmpty) Color(0xFFE8D0C0) else BurntOrange,
-                                    CircleShape
-                                ),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = "${routines.size}",
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.ExtraBold,
-                                color = if (badgeEmpty) SubText else Color.White,
-                                style = androidx.compose.ui.text.TextStyle(
-                                    platformStyle = androidx.compose.ui.text.PlatformTextStyle(includeFontPadding = false),
-                                    lineHeight = 11.sp
+                            Spacer(modifier = Modifier.width(12.dp))
+                            val badgeEmpty = routines.isEmpty()
+                            Box(
+                                modifier = Modifier
+                                    .size(22.dp)
+                                    .background(
+                                        if (badgeEmpty) Color(0xFFC2E0DA) else BurntOrange,
+                                        CircleShape
+                                    ),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = "${routines.size}",
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.ExtraBold,
+                                    color = if (badgeEmpty) SubText else Color.White,
+                                    style = androidx.compose.ui.text.TextStyle(
+                                        platformStyle = androidx.compose.ui.text.PlatformTextStyle(includeFontPadding = false),
+                                        lineHeight = 11.sp
+                                    )
                                 )
-                            )
+                            }
                         }
+                        HorizontalDivider(thickness = 2.dp, color = NearBlack)
                     }
                 }
 
                 items(routines, key = { it.id }) { routine ->
                     val summary by viewModel.getTaskSummary(routine.id)
-                        .collectAsStateWithLifecycle(initialValue = TaskSummary(0, 0))
+                        .collectAsStateWithLifecycle(initialValue = TaskSummary(0, 0, null))
                     RoutineCard(
                         routine = routine,
                         summary = summary,
@@ -193,26 +257,20 @@ fun HomeScreen(
             }
         }
 
-        ExtendedFloatingActionButton(
-            text = {
-                Text(
-                    "Create Routine",
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.ExtraBold,
-                    color = Color.White
-                )
-            },
-            icon = {
-                Icon(Icons.Filled.Add, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
-            },
+        val fabSource = remember { MutableInteractionSource() }
+        FloatingActionButton(
             onClick = onCreateRoutineClick,
-            shape = RoundedCornerShape(28.dp),
+            shape = CircleShape,
             containerColor = BurntOrange,
+            interactionSource = fabSource,
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .navigationBarsPadding()
-                .padding(bottom = 104.dp, end = 20.dp)
-        )
+                .padding(bottom = 150.dp, end = 24.dp)
+                .bouncyPress(fabSource)
+        ) {
+            Icon(Icons.Filled.Add, contentDescription = "Create Routine", tint = Color.White, modifier = Modifier.size(26.dp))
+        }
     }
 }
 
@@ -224,51 +282,114 @@ fun RoutineCard(
     onPlayClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val hasSchedule = routine.daysOfWeek != 0
     Card(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(18.dp),
         colors = CardDefaults.cardColors(containerColor = CardWhite),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(18.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .clickable(onClick = onEditClick)
-            ) {
-                Text(
-                    text = routine.name,
-                    style = MaterialTheme.typography.titleLarge,
-                    color = NearBlack
-                )
-                Spacer(modifier = Modifier.height(3.dp))
-                val taskWord = if (summary.taskCount == 1) "task" else "tasks"
-                val label = "${formatDuration(summary.totalDuration)} · ${summary.taskCount} $taskWord"
-                Text(
-                    text = label.uppercase(),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = SubText
+        Row(modifier = Modifier.fillMaxWidth()) {
+            // Accent bar for scheduled routines
+            if (hasSchedule) {
+                Box(
+                    modifier = Modifier
+                        .width(4.dp)
+                        .defaultMinSize(minHeight = 72.dp)
+                        .fillMaxHeight()
+                        .background(
+                            BurntOrange,
+                            RoundedCornerShape(topStart = 18.dp, bottomStart = 18.dp)
+                        )
                 )
             }
-            Box(
+            Column(
                 modifier = Modifier
-                    .size(38.dp)
-                    .background(BurntOrange, CircleShape)
-                    .clickable(onClick = onPlayClick),
-                contentAlignment = Alignment.Center
+                    .fillMaxWidth()
+                    .clickable(onClick = onEditClick)
+                    .padding(
+                        start = if (hasSchedule) 14.dp else 18.dp,
+                        end = 18.dp,
+                        top = 16.dp,
+                        bottom = 16.dp
+                    )
             ) {
-                Icon(
-                    imageVector = Icons.Rounded.PlayArrow,
-                    contentDescription = "Start",
-                    tint = Color.White,
-                    modifier = Modifier.size(18.dp)
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        val icon = summary.firstTaskIcon
+                        if (!icon.isNullOrEmpty()) {
+                            Box(
+                                modifier = Modifier
+                                    .size(44.dp)
+                                    .background(BurntOrangeLight, CircleShape),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(icon, fontSize = 22.sp)
+                            }
+                            Spacer(Modifier.width(12.dp))
+                        }
+                        Text(
+                            text = routine.name,
+                            style = MaterialTheme.typography.titleLarge,
+                            color = NearBlack
+                        )
+                    }
+                    Spacer(Modifier.width(8.dp))
+                    Box(
+                        modifier = Modifier
+                            .size(44.dp)
+                            .background(BurntOrange, CircleShape)
+                            .clickable(onClick = onPlayClick),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.PlayArrow,
+                            contentDescription = "Start",
+                            tint = Color.White,
+                            modifier = Modifier.size(22.dp)
+                        )
+                    }
+                }
+                Spacer(Modifier.height(10.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    val taskWord = if (summary.taskCount == 1) "task" else "tasks"
+                    listOf(
+                        formatDuration(summary.totalDuration),
+                        "${summary.taskCount} $taskWord"
+                    ).forEach { label ->
+                        Box(
+                            modifier = Modifier
+                                .background(BurntOrangeLight, RoundedCornerShape(20.dp))
+                                .padding(horizontal = 10.dp, vertical = 4.dp)
+                        ) {
+                            Text(
+                                text = label.uppercase(),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = BurntOrange
+                            )
+                        }
+                    }
+                    if (hasSchedule) {
+                        Box(
+                            modifier = Modifier
+                                .background(NeutralPill, RoundedCornerShape(20.dp))
+                                .padding(horizontal = 10.dp, vertical = 4.dp)
+                        ) {
+                            Text(
+                                text = formatScheduleDays(routine.daysOfWeek),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = SubText
+                            )
+                        }
+                    }
+                }
             }
         }
     }

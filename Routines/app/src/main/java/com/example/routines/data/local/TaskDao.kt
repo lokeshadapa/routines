@@ -7,7 +7,11 @@ import androidx.room.Query
 import androidx.room.Delete
 import kotlinx.coroutines.flow.Flow
 
-data class TaskSummary(val taskCount: Int, val totalDuration: Int)
+data class TaskSummary(
+    val taskCount: Int,
+    val totalDuration: Int,
+    val firstTaskIcon: String?
+)
 
 @Dao
 interface TaskDao {
@@ -15,7 +19,12 @@ interface TaskDao {
     @Query("SELECT * FROM tasks WHERE routineId = :routineId ORDER BY orderPosition ASC")
     fun getTasksForRoutine(routineId: Long): Flow<List<TaskEntity>>
 
-    @Query("SELECT COUNT(*) as taskCount, COALESCE(SUM(durationSeconds), 0) as totalDuration FROM tasks WHERE routineId = :routineId")
+    @Query("""
+        SELECT COUNT(*) as taskCount,
+               COALESCE(SUM(durationSeconds), 0) as totalDuration,
+               (SELECT icon FROM tasks WHERE routineId = :routineId ORDER BY orderPosition ASC LIMIT 1) as firstTaskIcon
+        FROM tasks WHERE routineId = :routineId
+    """)
     fun getTaskSummary(routineId: Long): Flow<TaskSummary>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
