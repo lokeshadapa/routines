@@ -1,5 +1,7 @@
 package com.example.routines.ui.main
 
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -185,14 +187,19 @@ fun RunningRoutineScreen(
             // Circular progress timer — fills as you complete the task
             val totalSecs = currentTask.durationSeconds.toFloat().coerceAtLeast(1f)
             val elapsed = totalSecs - timeRemainingSeconds
-            val fillProgress = (elapsed / totalSecs).coerceIn(0f, 1f)
+            val rawProgress = (elapsed / totalSecs).coerceIn(0f, 1f)
+            val fillProgress by animateFloatAsState(
+                targetValue = rawProgress,
+                animationSpec = tween(durationMillis = 800),
+                label = "timer_arc"
+            )
 
             Box(
-                modifier = Modifier.size(260.dp),
+                modifier = Modifier.size(280.dp),
                 contentAlignment = Alignment.Center
             ) {
                 Canvas(modifier = Modifier.fillMaxSize()) {
-                    val strokeWidth = 16.dp.toPx()
+                    val strokeWidth = 18.dp.toPx()
 
                     // Background track
                     drawArc(
@@ -216,7 +223,9 @@ fun RunningRoutineScreen(
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
                         text = formatTime(timeRemainingSeconds),
-                        style = MaterialTheme.typography.displayLarge,
+                        fontSize = 64.sp,
+                        fontWeight = FontWeight.Black,
+                        letterSpacing = (-2).sp,
                         color = NearBlack
                     )
                     Spacer(modifier = Modifier.height(5.dp))

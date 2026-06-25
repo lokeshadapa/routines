@@ -19,12 +19,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -35,7 +31,6 @@ import com.example.routines.DAY_SHORT
 import com.example.routines.formatDuration
 import com.example.routines.formatScheduleDays
 import com.example.routines.ui.viewmodel.RoutineViewModel
-import kotlinx.coroutines.delay
 import java.util.Calendar
 
 private fun timeGreeting(): String {
@@ -83,109 +78,56 @@ fun HomeScreen(
 ) {
     val routines by viewModel.allRoutines.collectAsStateWithLifecycle()
 
-    val selectedQuote = remember { QUOTES.random() }
-    var displayedQuote by remember { mutableStateOf("") }
-    var typingComplete by remember { mutableStateOf(false) }
-    var cursorVisible by remember { mutableStateOf(true) }
-
-    LaunchedEffect(selectedQuote) {
-        typingComplete = false
-        displayedQuote = ""
-        for (i in selectedQuote.indices) {
-            displayedQuote = selectedQuote.substring(0, i + 1)
-            delay(38)
-        }
-        typingComplete = true
-    }
-
-    LaunchedEffect(typingComplete) {
-        if (!typingComplete) {
-            while (true) {
-                delay(480)
-                cursorVisible = !cursorVisible
-            }
-        } else {
-            cursorVisible = false
-        }
-    }
-
     Box(modifier = Modifier.fillMaxSize().background(WarmWhite)) {
         LazyColumn(
             modifier = Modifier.fillMaxSize().statusBarsPadding().navigationBarsPadding(),
             contentPadding = PaddingValues(bottom = 180.dp)
         ) {
             item {
-                // Header with time greeting
-                Column(modifier = Modifier.padding(top = 30.dp, start = 24.dp, end = 24.dp)) {
-                    Text(
-                        text = timeGreeting(),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = SubText,
-                        letterSpacing = 0.5.sp
-                    )
-                    Spacer(modifier = Modifier.height(2.dp))
-                    Text(
-                        text = "Routines",
-                        style = MaterialTheme.typography.headlineLarge,
-                        color = NearBlack
-                    )
-                    Spacer(modifier = Modifier.height(10.dp))
-                    Box(
-                        modifier = Modifier
-                            .width(48.dp)
-                            .height(2.dp)
-                            .background(BurntOrange)
-                    )
-                }
-
-                // Quote card with decorative quotation mark
-                Box(
-                    modifier = Modifier
-                        .padding(top = 18.dp, start = 20.dp, end = 20.dp)
-                        .fillMaxWidth()
+                // Header — mirrors Explore page structure
+                Column(
+                    modifier = Modifier.padding(top = 30.dp, start = 24.dp, end = 24.dp)
                 ) {
-                    Card(
+                    Row(
                         modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.cardColors(containerColor = BurntOrangeLight),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Row(
-                            modifier = Modifier.padding(start = 18.dp, end = 18.dp, top = 14.dp, bottom = 16.dp),
-                            verticalAlignment = Alignment.Top
+                        Text(
+                            text = "Routines",
+                            style = MaterialTheme.typography.headlineLarge,
+                            color = NearBlack
+                        )
+                        val addSource = remember { MutableInteractionSource() }
+                        Box(
+                            modifier = Modifier
+                                .size(44.dp)
+                                .background(BurntOrange, CircleShape)
+                                .clickable(
+                                    interactionSource = addSource,
+                                    indication = null,
+                                    onClick = onCreateRoutineClick
+                                )
+                                .bouncyPress(addSource),
+                            contentAlignment = Alignment.Center
                         ) {
-                            Text(
-                                text = "“",
-                                fontSize = 48.sp,
-                                fontWeight = FontWeight.Black,
-                                color = BurntOrange.copy(alpha = 0.4f),
-                                lineHeight = 36.sp,
-                                modifier = Modifier.offset(y = (-4).dp)
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text(
-                                text = buildAnnotatedString {
-                                    append(displayedQuote)
-                                    if (!typingComplete) {
-                                        if (cursorVisible) {
-                                            withStyle(SpanStyle(color = BurntOrange, fontStyle = FontStyle.Normal)) {
-                                                append("_")
-                                            }
-                                        }
-                                    } else {
-                                        append("\u201D")
-                                    }
-                                },
-                                style = MaterialTheme.typography.bodyLarge,
-                                fontStyle = FontStyle.Italic,
-                                color = Color(0xFF0E4D3A),
-                                minLines = 2,
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .padding(top = 8.dp)
+                            Icon(
+                                Icons.Filled.Add,
+                                contentDescription = "Create Routine",
+                                tint = Color.White,
+                                modifier = Modifier.size(22.dp)
                             )
                         }
                     }
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Box(Modifier.width(48.dp).height(2.dp).background(NearBlack))
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = timeGreeting(),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = SubText
+                    )
+                    Spacer(modifier = Modifier.height(24.dp))
                 }
             }
 
@@ -197,49 +139,6 @@ fun HomeScreen(
                     )
                 }
             } else {
-                item {
-                    // Section header
-                    Column(
-                        modifier = Modifier
-                            .padding(top = 28.dp, start = 24.dp, end = 24.dp)
-                            .fillMaxWidth()
-                    ) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth().padding(bottom = 10.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = "YOUR ROUTINES",
-                                style = MaterialTheme.typography.labelLarge,
-                                color = NearBlack
-                            )
-                            Spacer(modifier = Modifier.width(12.dp))
-                            val badgeEmpty = routines.isEmpty()
-                            Box(
-                                modifier = Modifier
-                                    .size(22.dp)
-                                    .background(
-                                        if (badgeEmpty) Color(0xFFC2E0DA) else BurntOrange,
-                                        CircleShape
-                                    ),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = "${routines.size}",
-                                    fontSize = 11.sp,
-                                    fontWeight = FontWeight.ExtraBold,
-                                    color = if (badgeEmpty) SubText else Color.White,
-                                    style = androidx.compose.ui.text.TextStyle(
-                                        platformStyle = androidx.compose.ui.text.PlatformTextStyle(includeFontPadding = false),
-                                        lineHeight = 11.sp
-                                    )
-                                )
-                            }
-                        }
-                        HorizontalDivider(thickness = 2.dp, color = NearBlack)
-                    }
-                }
 
                 items(routines, key = { it.id }) { routine ->
                     val summary by viewModel.getTaskSummary(routine.id)
@@ -257,20 +156,6 @@ fun HomeScreen(
             }
         }
 
-        val fabSource = remember { MutableInteractionSource() }
-        FloatingActionButton(
-            onClick = onCreateRoutineClick,
-            shape = CircleShape,
-            containerColor = BurntOrange,
-            interactionSource = fabSource,
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .navigationBarsPadding()
-                .padding(bottom = 150.dp, end = 24.dp)
-                .bouncyPress(fabSource)
-        ) {
-            Icon(Icons.Filled.Add, contentDescription = "Create Routine", tint = Color.White, modifier = Modifier.size(26.dp))
-        }
     }
 }
 
@@ -323,7 +208,7 @@ fun RoutineCard(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.weight(1f)
                     ) {
-                        val icon = summary.firstTaskIcon
+                        val icon = routine.icon.ifEmpty { summary.firstTaskIcon }
                         if (!icon.isNullOrEmpty()) {
                             Box(
                                 modifier = Modifier

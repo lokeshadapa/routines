@@ -59,6 +59,14 @@ Compose UI → ViewModel → Repository → Room DAOs → SQLite
 | Navigation3 1.0.1 | Included but not yet wired |
 | Coroutines + Flow | Async / reactive data |
 
+## Design Reference: Tomato App
+
+**The Tomato app (`/Users/lokesh/Documents/Tomato`) is the gold standard for UI, transitions, timer design, notifications, and anything related to design and UX.** Before making any UI/UX decision, check how Tomato handles it first.
+
+Key reference files:
+- `androidApp/src/main/java/org/nsh07/pomodoro/ui/AppScreen.kt` — navigation bar island pattern (`HorizontalFloatingToolbar` + `ToggleButton`)
+- `shared/src/androidMain/kotlin/org/nsh07/pomodoro/ui/timerScreen/TimerScreen.kt` — timer ring, font sizing, animation
+
 ## Development Rules (from `android_best_practices.md`)
 
 - Use the `android-cli` tool/skill for creating the project, managing the SDK, running builds, and diagnostics — do not invoke `adb` or `sdkmanager` directly.

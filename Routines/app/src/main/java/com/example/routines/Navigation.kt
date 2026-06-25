@@ -2,28 +2,33 @@ package com.example.routines
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.Crossfade
-import androidx.compose.animation.core.tween
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Explore
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.rounded.Explore
 import androidx.compose.material.icons.rounded.Home
 import androidx.compose.material3.Icon
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -31,13 +36,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import com.example.routines.theme.BurntOrange
-import com.example.routines.theme.BurntOrangeLight
 import com.example.routines.theme.CardWhite
+import com.example.routines.theme.NunitoFontFamily
 import com.example.routines.theme.SubText
 import com.example.routines.ui.main.CreateRoutineScreen
 import com.example.routines.ui.main.DraftTask
@@ -45,6 +52,58 @@ import com.example.routines.ui.main.HomeScreen
 import com.example.routines.ui.main.RunningRoutineScreen
 import com.example.routines.ui.main.TemplatesScreen
 import com.example.routines.ui.viewmodel.RoutineViewModel
+
+@Composable
+private fun NavPill(
+    selected: Boolean,
+    label: String,
+    icon: ImageVector,
+    selectedIcon: ImageVector,
+    onClick: () -> Unit
+) {
+    val bgColor by animateColorAsState(
+        targetValue = if (selected) BurntOrange else Color.Transparent,
+        animationSpec = spring(dampingRatio = Spring.DampingRatioNoBouncy, stiffness = 1600f),
+        label = "${label}_bg"
+    )
+    val contentColor by animateColorAsState(
+        targetValue = if (selected) Color.White else SubText,
+        animationSpec = spring(dampingRatio = Spring.DampingRatioNoBouncy, stiffness = 1600f),
+        label = "${label}_fg"
+    )
+
+    Row(
+        modifier = Modifier
+            .clip(CircleShape)
+            .background(bgColor)
+            .clickable(onClick = onClick)
+            .padding(horizontal = 20.dp, vertical = 14.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Crossfade(targetState = selected, animationSpec = spring(dampingRatio = Spring.DampingRatioNoBouncy, stiffness = 1600f), label = "${label}_icon") { sel ->
+            Icon(
+                imageVector = if (sel) selectedIcon else icon,
+                contentDescription = label,
+                tint = contentColor,
+                modifier = Modifier.size(27.dp)
+            )
+        }
+        AnimatedVisibility(
+            visible = selected,
+            enter = expandHorizontally(animationSpec = spring(dampingRatio = Spring.DampingRatioNoBouncy, stiffness = 380f)) + fadeIn(spring(dampingRatio = Spring.DampingRatioNoBouncy, stiffness = 1600f)),
+            exit = shrinkHorizontally(animationSpec = spring(dampingRatio = Spring.DampingRatioNoBouncy, stiffness = 380f)) + fadeOut(spring(dampingRatio = Spring.DampingRatioNoBouncy, stiffness = 1600f))
+        ) {
+            Text(
+                text = label,
+                fontFamily = NunitoFontFamily,
+                fontWeight = FontWeight.ExtraBold,
+                fontSize = 15.sp,
+                color = Color.White
+            )
+        }
+    }
+}
 
 sealed class Screen {
     object Home : Screen()
@@ -58,30 +117,13 @@ sealed class Screen {
 @Composable
 fun MainNavigation(viewModel: RoutineViewModel) {
     var currentScreen by remember { mutableStateOf<Screen>(Screen.Home) }
-
     val showBottomNav = currentScreen is Screen.Home || currentScreen is Screen.Templates
 
     Box(modifier = Modifier.fillMaxSize()) {
         AnimatedContent(
             targetState = currentScreen,
             transitionSpec = {
-                val isTabSwitch =
-                    (initialState is Screen.Home && targetState is Screen.Templates) ||
-                    (initialState is Screen.Templates && targetState is Screen.Home)
-                when {
-                    isTabSwitch ->
-                        fadeIn(tween(200)) togetherWith fadeOut(tween(200))
-                    targetState is Screen.Home || targetState is Screen.Templates ->
-                        slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.End, tween(350)) +
-                            fadeIn(tween(200)) togetherWith
-                            slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.End, tween(350)) +
-                            fadeOut(tween(200))
-                    else ->
-                        slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Start, tween(350)) +
-                            fadeIn(tween(200)) togetherWith
-                            slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Start, tween(350)) +
-                            fadeOut(tween(200))
-                }
+                fadeIn(spring(dampingRatio = Spring.DampingRatioNoBouncy, stiffness = 1600f)) togetherWith fadeOut(spring(dampingRatio = Spring.DampingRatioNoBouncy, stiffness = 1600f))
             },
             label = "screen_transition",
             modifier = Modifier.fillMaxSize()
@@ -105,8 +147,8 @@ fun MainNavigation(viewModel: RoutineViewModel) {
                 is Screen.CreateRoutine -> {
                     CreateRoutineScreen(
                         onBack = { currentScreen = Screen.Home },
-                        onSave = { name, tasks, daysOfWeek, reminderEnabled, reminderHour, reminderMinute ->
-                            viewModel.saveRoutineWithTasks(name, tasks, daysOfWeek, reminderEnabled, reminderHour, reminderMinute)
+                        onSave = { name, icon, tasks, daysOfWeek, reminderEnabled, reminderHour, reminderMinute ->
+                            viewModel.saveRoutineWithTasks(name, icon, tasks, daysOfWeek, reminderEnabled, reminderHour, reminderMinute)
                             currentScreen = Screen.Home
                         }
                     )
@@ -116,8 +158,8 @@ fun MainNavigation(viewModel: RoutineViewModel) {
                         initialName = screen.name,
                         initialTasks = screen.tasks,
                         onBack = { currentScreen = Screen.Templates },
-                        onSave = { name, tasks, daysOfWeek, reminderEnabled, reminderHour, reminderMinute ->
-                            viewModel.saveRoutineWithTasks(name, tasks, daysOfWeek, reminderEnabled, reminderHour, reminderMinute)
+                        onSave = { name, icon, tasks, daysOfWeek, reminderEnabled, reminderHour, reminderMinute ->
+                            viewModel.saveRoutineWithTasks(name, icon, tasks, daysOfWeek, reminderEnabled, reminderHour, reminderMinute)
                             currentScreen = Screen.Home
                         }
                     )
@@ -130,6 +172,7 @@ fun MainNavigation(viewModel: RoutineViewModel) {
                     if (routine != null) {
                         CreateRoutineScreen(
                             initialName = routine.name,
+                            initialRoutineIcon = routine.icon,
                             initialTasks = tasks.map { DraftTask(it.name, it.durationSeconds, it.icon) },
                             initialDaysOfWeek = routine.daysOfWeek,
                             initialReminderEnabled = routine.reminderEnabled,
@@ -137,8 +180,8 @@ fun MainNavigation(viewModel: RoutineViewModel) {
                             initialReminderMinute = routine.reminderMinute,
                             isEditMode = true,
                             onBack = { currentScreen = Screen.Home },
-                            onSave = { name, draftTasks, daysOfWeek, reminderEnabled, reminderHour, reminderMinute ->
-                                viewModel.updateRoutineWithTasks(screen.routineId, name, draftTasks, daysOfWeek, reminderEnabled, reminderHour, reminderMinute)
+                            onSave = { name, icon, draftTasks, daysOfWeek, reminderEnabled, reminderHour, reminderMinute ->
+                                viewModel.updateRoutineWithTasks(screen.routineId, name, icon, draftTasks, daysOfWeek, reminderEnabled, reminderHour, reminderMinute)
                                 currentScreen = Screen.Home
                             },
                             onDelete = {
@@ -171,71 +214,40 @@ fun MainNavigation(viewModel: RoutineViewModel) {
         AnimatedVisibility(
             visible = showBottomNav,
             modifier = Modifier.align(Alignment.BottomCenter),
-            enter = slideInVertically { it } + fadeIn(tween(200)),
-            exit = slideOutVertically { it } + fadeOut(tween(200))
+            enter = slideInVertically(spring(dampingRatio = Spring.DampingRatioNoBouncy, stiffness = 200f)) { it } + fadeIn(spring(dampingRatio = Spring.DampingRatioNoBouncy, stiffness = 1600f)),
+            exit = slideOutVertically(spring(dampingRatio = Spring.DampingRatioNoBouncy, stiffness = 200f)) { it } + fadeOut(spring(dampingRatio = Spring.DampingRatioNoBouncy, stiffness = 1600f))
         ) {
-            val navShape = RoundedCornerShape(28.dp)
+            val navShape = RoundedCornerShape(40.dp)
             Box(
                 modifier = Modifier
-                    .fillMaxWidth()
                     .navigationBarsPadding()
-                    .padding(start = 24.dp, end = 24.dp, bottom = 16.dp)
+                    .padding(bottom = 16.dp),
+                contentAlignment = Alignment.Center
             ) {
-                NavigationBar(
-                    containerColor = CardWhite,
-                    tonalElevation = 0.dp,
+                Row(
                     modifier = Modifier
-                        .fillMaxWidth()
                         .shadow(elevation = 16.dp, shape = navShape, ambientColor = Color(0x22000000), spotColor = Color(0x33000000))
                         .clip(navShape)
+                        .background(CardWhite)
+                        .padding(horizontal = 8.dp, vertical = 8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     val homeSelected = currentScreen is Screen.Home
-                    NavigationBarItem(
-                        selected = homeSelected,
-                        onClick = { currentScreen = Screen.Home },
-                        icon = {
-                            Crossfade(targetState = homeSelected, animationSpec = tween(220), label = "home_icon") { sel ->
-                                Icon(if (sel) Icons.Rounded.Home else Icons.Outlined.Home, contentDescription = "Home")
-                            }
-                        },
-                        label = {
-                            Text(
-                                "Home",
-                                fontSize = 11.sp,
-                                fontWeight = if (homeSelected) FontWeight.ExtraBold else FontWeight.Medium
-                            )
-                        },
-                        colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = BurntOrange,
-                            selectedTextColor = BurntOrange,
-                            indicatorColor = BurntOrangeLight,
-                            unselectedIconColor = SubText,
-                            unselectedTextColor = SubText
-                        )
-                    )
                     val exploreSelected = currentScreen is Screen.Templates
-                    NavigationBarItem(
+                    NavPill(
+                        selected = homeSelected,
+                        label = "Home",
+                        icon = Icons.Outlined.Home,
+                        selectedIcon = Icons.Rounded.Home,
+                        onClick = { currentScreen = Screen.Home }
+                    )
+                    NavPill(
                         selected = exploreSelected,
-                        onClick = { currentScreen = Screen.Templates },
-                        icon = {
-                            Crossfade(targetState = exploreSelected, animationSpec = tween(220), label = "explore_icon") { sel ->
-                                Icon(if (sel) Icons.Rounded.Explore else Icons.Outlined.Explore, contentDescription = "Explore")
-                            }
-                        },
-                        label = {
-                            Text(
-                                "Explore",
-                                fontSize = 11.sp,
-                                fontWeight = if (exploreSelected) FontWeight.ExtraBold else FontWeight.Medium
-                            )
-                        },
-                        colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = BurntOrange,
-                            selectedTextColor = BurntOrange,
-                            indicatorColor = BurntOrangeLight,
-                            unselectedIconColor = SubText,
-                            unselectedTextColor = SubText
-                        )
+                        label = "Explore",
+                        icon = Icons.Outlined.Explore,
+                        selectedIcon = Icons.Rounded.Explore,
+                        onClick = { currentScreen = Screen.Templates }
                     )
                 }
             }
